@@ -906,10 +906,11 @@
   // ── Token storage ──────────────────────────────────────────────
   const PAGE_IDS = {
     'lash-fb':   '905199359836693',
-    'lash-ig':   '905199359836693',
+    'lash-ig':   '17841416565693300',
     'vaskly-fb': '492722030599321',
-    'vaskly-ig': '492722030599321',
+    'vaskly-ig': '17841441504891811',
     'lux-fb':    '1011642565365855',
+    'lux-ig':    '17841441832722744',
   };
 
   function getTokens() {
@@ -1102,39 +1103,90 @@
     let successCount = 0;
     for (const chip of selected) {
       let tokenKey = null;
+      let isIG = false;
       if (chip.includes('Lash Rehab') && chip.includes('FB')) tokenKey = 'lash-fb';
+      else if (chip.includes('Lash Rehab') && chip.includes('IG')) { tokenKey = 'lash-fb'; isIG = true; }
       else if (chip.includes('Vaskly') && chip.includes('FB')) tokenKey = 'vaskly-fb';
+      else if (chip.includes('Vaskly') && chip.includes('IG')) { tokenKey = 'vaskly-fb'; isIG = true; }
       else if (chip.includes('LuxCement') && chip.includes('FB')) tokenKey = 'lux-fb';
+      else if (chip.includes('LuxCement') && chip.includes('IG')) { tokenKey = 'lux-fb'; isIG = true; }
 
       if (!tokenKey || !tokens[tokenKey]) continue;
-      const pageId = PAGE_IDS[tokenKey];
+      const fbPageId = PAGE_IDS[tokenKey];
+      const igKey = tokenKey.replace('-fb', '-ig');
+      const igId = PAGE_IDS[igKey];
       const token = tokens[tokenKey];
 
       try {
         let postData = null;
-        if (selectedImageFile) {
+
+        if (isIG && igId) {
+          // Instagram posting - requires image
+          if (selectedImageFile) {
+            showNotif('📤 Posting to Instagram...');
+            // Step 1: Upload image to get media container
+            const base64 = selectedImageBase64;
+            // Use Facebook page token to create IG media container
+            const step1 = await fetch('https://graph.facebook.com/v25.0/' + igId + '/media', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                image_url: null,
+                caption: msg,
+                access_token: token
+              })
+            });
+            // IG requires a public URL - use the FB page photo approach instead
+            // Post image to FB page first to get URL, then use for IG
+            const formData = new FormData();
+            formData.append('source', selectedImageFile);
+            formData.append('caption', msg);
+            formData.append('access_token', token);
+            const igr = await fetch('https://graph.facebook.com/v25.0/' + igId + '/media', {
+              method: 'POST',
+              body: formData
+            });
+            const igrData = await igr.json();
+            if (igrData.id) {
+              // Step 2: Publish the container
+              const pub = await fetch('https://graph.facebook.com/v25.0/' + igId + '/media_publish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ creation_id: igrData.id, access_token: token })
+              });
+              postData = await pub.json();
+            } else {
+              postData = igrData;
+            }
+          } else {
+            // Text only - not supported on Instagram, skip
+            showNotif('⚠ Instagram requires an image to post!');
+            continue;
+          }
+        } else if (selectedImageFile) {
           showNotif('📤 Uploading image...');
           const formData = new FormData();
           formData.append('source', selectedImageFile);
           formData.append('message', msg);
           formData.append('access_token', token);
-          const r = await fetch('https://graph.facebook.com/v25.0/' + pageId + '/photos', {
+          const r = await fetch('https://graph.facebook.com/v25.0/' + fbPageId + '/photos', {
             method: 'POST',
             body: formData
           });
           postData = await r.json();
         } else {
-          const r = await fetch('https://graph.facebook.com/v25.0/' + pageId + '/feed', {
+          const r = await fetch('https://graph.facebook.com/v25.0/' + fbPageId + '/feed', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: msg, access_token: token })
           });
           postData = await r.json();
         }
+
         if (postData && (postData.id || postData.post_id)) {
           successCount++;
         } else if (postData && postData.error) {
-          showNotif('❌ ' + postData.error.message);
+          showNotif('❌ IG: ' + postData.error.message);
           console.error('Post error:', postData.error);
         }
       } catch(e) {
