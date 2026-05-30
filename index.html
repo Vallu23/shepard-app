@@ -845,6 +845,22 @@
             <div style="font-size:12px;color:var(--lux);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--lux);display:inline-block;"></span>LuxCement India — Facebook Token</div>
             <input class="token-input" id="token-lux-fb" placeholder="EAAMPRK4XYao..." />
           </div>
+
+          <div style="margin:20px 0 12px;padding-top:16px;border-top:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text);">📸 Instagram Tokens</div>
+
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--lash);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--lash);display:inline-block;"></span>Lash Rehab — Instagram Token</div>
+            <input class="token-input" id="token-lash-ig-direct" placeholder="IGAAVmp..." />
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--vaskly);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--vaskly);display:inline-block;"></span>Vaskly.no — Instagram Token</div>
+            <input class="token-input" id="token-vaskly-ig-direct" placeholder="IGAAVmp..." />
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--lux);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--lux);display:inline-block;"></span>LuxCement India — Instagram Token</div>
+            <input class="token-input" id="token-lux-ig-direct" placeholder="IGAAVmp..." />
+          </div>
+
           <button class="btn btn-primary" onclick="saveTokens()" style="width:100%;margin-top:8px;">Save Tokens</button>
         </div>
 
@@ -931,6 +947,12 @@
       const val = document.getElementById('token-' + id).value.trim();
       if (val) tokens[id] = val;
     });
+    // Also save direct Instagram tokens
+    const igIds = ['lash-ig-direct','vaskly-ig-direct','lux-ig-direct'];
+    igIds.forEach(id => {
+      const el = document.getElementById('token-' + id);
+      if (el && el.value.trim()) tokens[id] = el.value.trim();
+    });
     localStorage.setItem('shepard_tokens', JSON.stringify(tokens));
     showNotif('✅ Tokens saved! Fetching real data...');
     setTimeout(() => fetchAllData(), 800);
@@ -939,8 +961,11 @@
   function loadSavedTokensIntoInputs() {
     const tokens = getTokens();
     Object.keys(tokens).forEach(id => {
-      const el = document.getElementById('token-' + id);
+      const el = document.getElementById('token-' + id) || document.getElementById('token-' + id + '-direct');
       if (el) el.value = tokens[id];
+      // Also try direct IG fields
+      const directEl = document.getElementById('token-' + id + '-direct');
+      if (directEl && tokens[id + '-direct']) directEl.value = tokens[id + '-direct'];
     });
   }
 
@@ -1129,27 +1154,32 @@
 
         if (isIG && igId) {
           // Instagram posting - requires image
+          // Get the direct Instagram token
+          const igTokenKey = tokenKey.replace('-fb', '-ig-direct');
+          const igToken = tokens[igTokenKey] || token;
           const igUrl = document.getElementById('ig-image-url') ? document.getElementById('ig-image-url').value.trim() : '';
           if (!igUrl) {
             showNotif('⚠ Please paste an image URL for Instagram!');
             continue;
           }
           showNotif('📤 Posting to Instagram...');
-          // Step 1: Create media container with public URL
+          // Step 1: Create media container with public URL using IG token
           const igr = await fetch('https://graph.facebook.com/v25.0/' + igId + '/media', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image_url: igUrl, caption: msg, access_token: token })
+            body: JSON.stringify({ image_url: igUrl, caption: msg, access_token: igToken })
           });
           const igrData = await igr.json();
+          console.log('IG media create:', igrData);
           if (igrData.id) {
             // Step 2: Publish the container
             const pub = await fetch('https://graph.facebook.com/v25.0/' + igId + '/media_publish', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ creation_id: igrData.id, access_token: token })
+              body: JSON.stringify({ creation_id: igrData.id, access_token: igToken })
             });
             postData = await pub.json();
+            console.log('IG publish:', postData);
           } else {
             postData = igrData;
           }
