@@ -1111,18 +1111,39 @@
       const token = tokens[tokenKey];
 
       try {
-        const r = await fetch(`https://graph.facebook.com/v25.0/${pageId}/feed`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: msg, access_token: token })
-        });
-        const data = await r.json();
-        if (data.id) successCount++;
-      } catch(e) {}
+        let postData = null;
+        if (selectedImageFile) {
+          showNotif('📤 Uploading image...');
+          const formData = new FormData();
+          formData.append('source', selectedImageFile);
+          formData.append('message', msg);
+          formData.append('access_token', token);
+          const r = await fetch('https://graph.facebook.com/v25.0/' + pageId + '/photos', {
+            method: 'POST',
+            body: formData
+          });
+          postData = await r.json();
+        } else {
+          const r = await fetch('https://graph.facebook.com/v25.0/' + pageId + '/feed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg, access_token: token })
+          });
+          postData = await r.json();
+        }
+        if (postData && (postData.id || postData.post_id)) {
+          successCount++;
+        } else if (postData && postData.error) {
+          showNotif('❌ ' + postData.error.message);
+          console.error('Post error:', postData.error);
+        }
+      } catch(e) {
+        console.error('Post exception:', e);
+      }
     }
 
     if (successCount > 0) {
-      showNotif(`✅ Posted to ${successCount} page(s) successfully!`);
+      showNotif('✅ Posted to ' + successCount + ' page(s) successfully!');
       document.getElementById('post-text').value = ''; removeImage();
     } else {
       showNotif('⚠ Could not post — check your tokens in Settings.');
