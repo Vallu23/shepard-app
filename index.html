@@ -1340,13 +1340,14 @@
       const token = tokens[tokenKey];
 
       try {
-        const r = await fetch('/api/post', {
+        const fbUrl2 = 'https://graph.facebook.com/v25.0/' + pageId + '/feed';
+        const r = await fetch(fbUrl2, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pageId: pageId, accessToken: token, message: post.message })
+          body: JSON.stringify({ message: post.message, access_token: token })
         });
         const data = await r.json();
-        if (data.success) successCount++;
+        if (data.id) successCount++;
       } catch(e) {}
     }
 
