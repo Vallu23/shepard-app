@@ -3,1475 +3,912 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shepard Dashboard</title>
+<title>Shepard v2</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #13131a;
-    --surface2: #1c1c26;
-    --border: #2a2a38;
-    --accent: #7c5cfc;
-    --accent2: #fc5c7d;
-    --accent3: #5cf8c8;
-    --text: #f0f0f8;
-    --muted: #7070a0;
-    --lash: #fc5c7d;
-    --vaskly: #5cf8c8;
-    --lux: #fcc85c;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Background grid */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: 
-      linear-gradient(rgba(124,92,252,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(124,92,252,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .app { position: relative; z-index: 1; display: flex; min-height: 100vh; }
-
-  /* Sidebar */
-  .sidebar {
-    width: 240px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    padding: 24px 0;
-    position: fixed;
-    height: 100vh;
-    top: 0; left: 0;
-  }
-  .logo {
-    padding: 0 24px 24px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 16px;
-  }
-  .logo h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .logo p { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-  .nav-section { padding: 0 12px; margin-bottom: 8px; }
-  .nav-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 12px; margin-bottom: 6px; }
-  .nav-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 12px; border-radius: 8px;
-    cursor: pointer; font-size: 14px; color: var(--muted);
-    transition: all 0.15s; border: none; background: none;
-    width: 100%; text-align: left;
-  }
-  .nav-item:hover { background: var(--surface2); color: var(--text); }
-  .nav-item.active { background: rgba(124,92,252,0.15); color: var(--accent); }
-  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
-
-  .pages-section { padding: 0 12px; margin-top: 8px; }
-  .page-dot {
-    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-  }
-
-  /* Main */
-  .main { margin-left: 240px; flex: 1; padding: 32px; }
-
-  /* Top bar */
-  .topbar {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 32px;
-  }
-  .topbar h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: 28px; font-weight: 800; letter-spacing: -1px;
-  }
-  .topbar-actions { display: flex; gap: 10px; }
-  .btn {
-    padding: 10px 18px; border-radius: 8px; font-size: 13px;
-    font-family: 'DM Sans', sans-serif; font-weight: 500;
-    cursor: pointer; border: none; transition: all 0.15s;
-  }
-  .btn-ghost {
-    background: var(--surface2); color: var(--text);
-    border: 1px solid var(--border);
-  }
-  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: white;
-  }
-  .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
-
-  /* Page tabs */
-  .page-tabs {
-    display: flex; gap: 8px; margin-bottom: 28px;
-  }
-  .page-tab {
-    padding: 8px 16px; border-radius: 20px; font-size: 13px;
-    cursor: pointer; border: 1px solid var(--border);
-    background: var(--surface); color: var(--muted);
-    transition: all 0.15s; font-family: 'DM Sans', sans-serif;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .page-tab:hover { border-color: var(--muted); color: var(--text); }
-  .page-tab.active { border-color: transparent; color: white; }
-  .page-tab.lash.active { background: rgba(252,92,125,0.2); border-color: var(--lash); color: var(--lash); }
-  .page-tab.vaskly.active { background: rgba(92,248,200,0.2); border-color: var(--vaskly); color: var(--vaskly); }
-  .page-tab.lux.active { background: rgba(252,200,92,0.2); border-color: var(--lux); color: var(--lux); }
-  .tab-dot { width: 7px; height: 7px; border-radius: 50%; }
-  .lash .tab-dot { background: var(--lash); }
-  .vaskly .tab-dot { background: var(--vaskly); }
-  .lux .tab-dot { background: var(--lux); }
-
-  /* Sections */
-  .section { display: none; }
-  .section.active { display: block; }
-
-  /* Stats grid */
-  .stats-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: 16px; margin-bottom: 24px;
-  }
-  .stat-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 20px;
-    transition: border-color 0.2s;
-  }
-  .stat-card:hover { border-color: var(--accent); }
-  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-  .stat-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; }
-  .stat-change { font-size: 12px; margin-top: 4px; }
-  .stat-change.up { color: var(--accent3); }
-  .stat-change.down { color: var(--accent2); }
-
-  /* Two col */
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-
-  /* Card */
-  .card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 20px;
-  }
-  .card-title {
-    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
-    margin-bottom: 16px; display: flex; justify-content: space-between;
-    align-items: center;
-  }
-  .card-title span { font-family: 'DM Sans', sans-serif; font-size: 11px; color: var(--muted); font-weight: 400; }
-
-  /* Post composer */
-  .composer {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 24px; margin-bottom: 24px;
-  }
-  .composer-header {
-    font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700;
-    margin-bottom: 16px;
-  }
-  .composer-targets {
-    display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
-  }
-  .target-chip {
-    padding: 6px 12px; border-radius: 20px; font-size: 12px;
-    cursor: pointer; border: 1px solid var(--border);
-    background: var(--surface2); color: var(--muted);
-    transition: all 0.15s; display: flex; align-items: center; gap: 6px;
-  }
-  .target-chip.selected { border-color: var(--accent); color: var(--text); background: rgba(124,92,252,0.1); }
-  .target-chip .chip-dot { width: 6px; height: 6px; border-radius: 50%; }
-
-  textarea {
-    width: 100%; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 14px; color: var(--text);
-    font-family: 'DM Sans', sans-serif; font-size: 14px;
-    resize: vertical; min-height: 100px; outline: none;
-    transition: border-color 0.15s;
-  }
-  textarea:focus { border-color: var(--accent); }
-  textarea::placeholder { color: var(--muted); }
-
-  .composer-footer {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-top: 12px;
-  }
-  .composer-options { display: flex; gap: 8px; }
-  .icon-btn {
-    width: 36px; height: 36px; border-radius: 8px;
-    background: var(--surface2); border: 1px solid var(--border);
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    color: var(--muted); transition: all 0.15s;
-  }
-  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* Post list */
-  .post-item {
-    display: flex; gap: 12px; padding: 14px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .post-item:last-child { border-bottom: none; }
-  .post-avatar {
-    width: 36px; height: 36px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; flex-shrink: 0; color: white;
-  }
-  .post-content { flex: 1; }
-  .post-meta { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-  .post-text { font-size: 13px; line-height: 1.5; margin-bottom: 6px; }
-  .post-stats { display: flex; gap: 12px; }
-  .post-stat { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
-  .post-badge {
-    font-size: 10px; padding: 2px 8px; border-radius: 10px;
-    margin-left: auto; align-self: flex-start;
-  }
-  .badge-fb { background: rgba(92,92,252,0.2); color: #8080ff; }
-  .badge-ig { background: rgba(252,92,125,0.2); color: var(--lash); }
-
-  /* Ad cards */
-  .ad-card {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 16px; margin-bottom: 12px;
-  }
-  .ad-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-  .ad-name { font-size: 13px; font-weight: 500; }
-  .ad-status {
-    font-size: 10px; padding: 3px 8px; border-radius: 10px;
-  }
-  .status-active { background: rgba(92,248,200,0.15); color: var(--accent3); }
-  .status-paused { background: rgba(252,200,92,0.15); color: var(--lux); }
-  .ad-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .ad-metric { text-align: center; }
-  .ad-metric-val { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; }
-  .ad-metric-lbl { font-size: 10px; color: var(--muted); }
-
-  /* Bar chart */
-  .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin-top: 8px; }
-  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .bar {
-    width: 100%; border-radius: 4px 4px 0 0;
-    transition: opacity 0.15s; cursor: pointer;
-  }
-  .bar:hover { opacity: 0.7; }
-  .bar-lbl { font-size: 9px; color: var(--muted); }
-
-  /* Schedule */
-  .schedule-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 0; border-bottom: 1px solid var(--border);
-  }
-  .schedule-item:last-child { border-bottom: none; }
-  .schedule-time { font-size: 11px; color: var(--muted); min-width: 60px; }
-  .schedule-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .schedule-text { font-size: 13px; flex: 1; }
-  .schedule-platform { font-size: 10px; color: var(--muted); }
-
-  /* Notification */
-  .notif {
-    position: fixed; bottom: 24px; right: 24px;
-    background: var(--surface2); border: 1px solid var(--accent);
-    border-radius: 10px; padding: 14px 18px;
-    font-size: 13px; color: var(--text);
-    transform: translateY(100px); opacity: 0;
-    transition: all 0.3s; z-index: 100;
-  }
-  .notif.show { transform: translateY(0); opacity: 1; }
-
-  /* Token modal */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 50; opacity: 0; pointer-events: none; transition: opacity 0.2s;
-  }
-  .modal-overlay.open { opacity: 1; pointer-events: all; }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 16px; padding: 28px; width: 500px; max-width: 90vw;
-    transform: scale(0.95); transition: transform 0.2s;
-  }
-  .modal-overlay.open .modal { transform: scale(1); }
-  .modal h3 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-  .modal p { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
-  .token-input {
-    width: 100%; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 12px; color: var(--text);
-    font-family: monospace; font-size: 11px; outline: none;
-    transition: border-color 0.15s; margin-bottom: 12px;
-  }
-  .token-input:focus { border-color: var(--accent); }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
-
-  /* Responsive */
-  @media (max-width: 900px) {
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .two-col, .three-col { grid-template-columns: 1fr; }
-  }
-
-  .pulse {
-    animation: pulse 2s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-
-  .fade-in {
-    animation: fadeIn 0.4s ease forwards;
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Schedule Modal */
-  .schedule-modal {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.75);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 60; opacity: 0; pointer-events: none; transition: opacity 0.2s;
-  }
-  .schedule-modal.open { opacity: 1; pointer-events: all; }
-  .schedule-modal .modal {
-    width: 420px; max-width: 90vw;
-  }
-  .schedule-modal .modal h3 { font-family: "Syne", sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-  .schedule-modal .modal p { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
-  .field-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-  .field-group { margin-bottom: 16px; }
-  input[type="datetime-local"], input[type="text"] {
-    width: 100%; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px 12px; color: var(--text);
-    font-family: "DM Sans", sans-serif; font-size: 13px; outline: none;
-    transition: border-color 0.15s;
-  }
-  input[type="datetime-local"]:focus, input[type="text"]:focus { border-color: var(--accent); }
-  input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-  .scheduled-list-item {
-    display: flex; align-items: flex-start; gap: 12px;
-    padding: 12px; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 10px;
-    margin-bottom: 10px;
-  }
-  .scheduled-list-item .sl-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; }
-  .scheduled-list-item .sl-info { flex: 1; }
-  .scheduled-list-item .sl-time { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
-  .scheduled-list-item .sl-text { font-size: 13px; }
-  .scheduled-list-item .sl-pages { font-size: 11px; color: var(--accent); margin-top: 4px; }
-  .sl-delete { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 0 4px; }
-  .sl-delete:hover { color: var(--accent2); }
-
+:root{--bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c26;--border:#2a2a38;--accent:#7c5cfc;--accent2:#fc5c7d;--accent3:#5cf8c8;--text:#f0f0f8;--muted:#7070a0;--lash:#fc5c7d;--vaskly:#5cf8c8;--lux:#fcc85c}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(124,92,252,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(124,92,252,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 0;position:fixed;height:100vh;top:0;left:0;overflow-y:auto}
+.logo{padding:0 24px 24px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.logo h1{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo p{font-size:11px;color:var(--muted);margin-top:2px}
+.nav-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;padding:0 24px;margin-bottom:6px;margin-top:16px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:0 12px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--muted);transition:all 0.15s;border:none;background:none;width:calc(100% - 24px);text-align:left}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(124,92,252,0.15);color:var(--accent)}
+.nav-item i{width:16px;font-size:16px}
+.page-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.main{margin-left:240px;flex:1;padding:32px}
+.section{display:none}.section.active{display:block}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+.topbar h2{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px}
+.btn{padding:10px 18px;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;border:none;transition:all 0.15s}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white}
+.btn-primary:hover{opacity:0.85;transform:translateY(-1px)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.card-title span{font-family:'DM Sans',sans-serif;font-size:11px;color:var(--muted);font-weight:400}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.stat-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:700}
+.stat-change{font-size:12px;margin-top:4px}
+.stat-change.up{color:var(--accent3)}.stat-change.down{color:var(--accent2)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:80px;margin-top:8px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar{width:100%;border-radius:4px 4px 0 0;transition:opacity 0.15s;cursor:pointer}
+.bar-lbl{font-size:9px;color:var(--muted)}
+textarea,input[type=text],input[type=datetime-local]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.15s}
+textarea{resize:vertical;min-height:100px}
+textarea:focus,input[type=text]:focus,input[type=datetime-local]:focus{border-color:var(--accent)}
+textarea::placeholder,input::placeholder{color:var(--muted)}
+input[type=datetime-local]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:pointer}
+.target-chip{padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--muted);transition:all 0.15s;display:flex;align-items:center;gap:6px}
+.target-chip.selected{border-color:var(--accent);color:var(--text);background:rgba(124,92,252,0.1)}
+.chip-dot{width:6px;height:6px;border-radius:50%}
+.composer{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px}
+.composer-targets{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.composer-footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.composer-options{display:flex;gap:8px}
+.icon-btn{width:36px;height:36px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all 0.15s;font-size:16px}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent)}
+.notif{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--accent);border-radius:10px;padding:14px 18px;font-size:13px;color:var(--text);transform:translateY(100px);opacity:0;transition:all 0.3s;z-index:100;max-width:320px}
+.notif.show{transform:translateY(0);opacity:1}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:50;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:520px;max-width:90vw}
+.modal h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px}
+.modal p{font-size:13px;color:var(--muted);margin-bottom:16px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.token-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-family:monospace;font-size:11px;outline:none;transition:border-color 0.15s;margin-bottom:12px}
+.token-input:focus{border-color:var(--accent)}
+.post-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.post-item:last-child{border-bottom:none}
+.post-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;color:white}
+.post-content{flex:1}
+.post-meta{font-size:11px;color:var(--muted);margin-bottom:4px}
+.post-text{font-size:13px;line-height:1.5;margin-bottom:6px}
+.post-stats{display:flex;gap:12px}
+.post-stat{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.badge{font-size:10px;padding:2px 8px;border-radius:10px}
+.badge-fb{background:rgba(92,92,252,0.2);color:#8080ff}
+.badge-ig{background:rgba(252,92,125,0.2);color:var(--lash)}
+.comment-item{padding:12px;background:var(--surface2);border-radius:8px;margin-bottom:8px}
+.comment-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.comment-author{font-size:13px;font-weight:500}
+.comment-time{font-size:11px;color:var(--muted)}
+.comment-text{font-size:13px;color:var(--muted);margin-bottom:8px}
+.comment-actions{display:flex;gap:8px}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-header{font-size:11px;color:var(--muted);text-align:center;padding:4px}
+.cal-day{min-height:80px;background:var(--surface2);border-radius:6px;padding:6px;cursor:pointer;border:1px solid transparent;transition:all 0.15s}
+.cal-day:hover{border-color:var(--accent)}
+.cal-day.today{border-color:var(--accent);background:rgba(124,92,252,0.1)}
+.cal-day.other-month{opacity:0.3}
+.cal-date{font-size:12px;color:var(--muted);margin-bottom:4px}
+.cal-event{font-size:10px;padding:2px 6px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai-suggestion{background:rgba(124,92,252,0.1);border:1px solid rgba(124,92,252,0.3);border-radius:8px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all 0.15s}
+.ai-suggestion:hover{background:rgba(124,92,252,0.2)}
+.ai-suggestion p{font-size:13px;line-height:1.5}
+.ai-suggestion .ai-meta{font-size:11px;color:var(--muted);margin-top:6px}
+.fade-in{animation:fadeIn 0.4s ease forwards}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.scheduled-item{display:flex;align-items:flex-start;gap:12px;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px}
+.sl-dot{width:10px;height:10px;border-radius:50%;margin-top:3px;flex-shrink:0}
+.sl-info{flex:1}
+.sl-time{font-size:11px;color:var(--muted);margin-bottom:2px}
+.sl-text{font-size:13px}
+.sl-pages{font-size:11px;color:var(--accent);margin-top:4px}
+.sl-delete{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0 4px}
+.sl-delete:hover{color:var(--accent2)}
+.progress-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;border-radius:3px;transition:width 0.3s}
+@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col,.three-col{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="app">
+<aside class="sidebar">
+  <div class="logo">
+    <h1>Shepard</h1>
+    <p>Social Management Platform</p>
+  </div>
+  <div class="nav-label">Menu</div>
+  <button class="nav-item active" onclick="showSection('overview',this)"><i class="ti ti-layout-dashboard"></i>Overview</button>
+  <button class="nav-item" onclick="showSection('compose',this)"><i class="ti ti-pencil"></i>Post Content</button>
+  <button class="nav-item" onclick="showSection('calendar',this)"><i class="ti ti-calendar"></i>Calendar</button>
+  <button class="nav-item" onclick="showSection('comments',this)"><i class="ti ti-message-circle"></i>Comments</button>
+  <button class="nav-item" onclick="showSection('analytics',this)"><i class="ti ti-chart-bar"></i>Analytics</button>
+  <button class="nav-item" onclick="showSection('ads',this)"><i class="ti ti-trending-up"></i>Ads Manager</button>
+  <button class="nav-item" onclick="showSection('settings',this)"><i class="ti ti-settings"></i>Settings</button>
+  <div class="nav-label">Your Pages</div>
+  <div style="padding:0 24px">
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;color:var(--muted)"><div class="page-dot" style="background:var(--lash)"></div>Lash Rehab</div>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;color:var(--muted)"><div class="page-dot" style="background:var(--vaskly)"></div>Vaskly.no</div>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;color:var(--muted)"><div class="page-dot" style="background:var(--lux)"></div>LuxCement India</div>
+  </div>
+</aside>
 
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="logo">
-      <h1>Shepard</h1>
-      <p>Social Management Platform</p>
+<main class="main">
+
+<!-- OVERVIEW -->
+<div id="section-overview" class="section active fade-in">
+  <div class="topbar">
+    <div><h2>Overview</h2><p style="font-size:13px;color:var(--muted);margin-top:4px">All pages · Last 30 days</p></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" onclick="showSection('compose',document.querySelector('[onclick*=compose]'))">+ New Post</button>
+      <button class="btn btn-primary" onclick="document.getElementById('tokenModal').classList.add('open')">⚙ Tokens</button>
     </div>
-
-    <div class="nav-section">
-      <div class="nav-label">Menu</div>
-      <button class="nav-item active" onclick="showSection('overview')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        Overview
-      </button>
-      <button class="nav-item" onclick="showSection('compose')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Post Content
-      </button>
-      <button class="nav-item" onclick="showSection('ads')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-        Ads Manager
-      </button>
-      <button class="nav-item" onclick="showSection('stats')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        Analytics
-      </button>
-      <button class="nav-item" onclick="showSection('settings')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-        Settings
-      </button>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Total Reach</div><div class="stat-value" id="stat-reach" style="color:var(--accent)">—</div><div class="stat-change up" id="stat-reach-change">Loading...</div></div>
+    <div class="stat-card"><div class="stat-label">Engagements</div><div class="stat-value" id="stat-engage" style="color:var(--accent2)">—</div><div class="stat-change up">This month</div></div>
+    <div class="stat-card"><div class="stat-label">Followers</div><div class="stat-value" id="stat-followers" style="color:var(--accent3)">—</div><div class="stat-change up">All pages</div></div>
+    <div class="stat-card"><div class="stat-label">Scheduled</div><div class="stat-value" id="stat-scheduled" style="color:var(--lux)">0</div><div class="stat-change up">Upcoming posts</div></div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Recent Posts <span>From Facebook</span></div>
+      <div id="recent-posts-list"><div style="font-size:13px;color:var(--muted);padding:20px 0;text-align:center">Save tokens in Settings to load real posts</div></div>
     </div>
-
-    <div class="pages-section" style="margin-top:24px;">
-      <div class="nav-label">Your Pages</div>
-      <div style="padding: 0 12px;">
-        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;font-size:13px;color:var(--muted);">
-          <div class="page-dot" style="background:var(--lash)"></div> Lash Rehab
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;font-size:13px;color:var(--muted);">
-          <div class="page-dot" style="background:var(--vaskly)"></div> Vaskly.no
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;font-size:13px;color:var(--muted);">
-          <div class="page-dot" style="background:var(--lux)"></div> LuxCement India
-        </div>
-      </div>
+    <div class="card">
+      <div class="card-title">Upcoming Schedule <span id="overview-schedule-count">0 scheduled</span></div>
+      <div id="overview-schedule-list"><div style="font-size:13px;color:var(--muted);text-align:center;padding:20px 0">No scheduled posts yet</div></div>
     </div>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="main">
-
-    <!-- OVERVIEW SECTION -->
-    <div id="section-overview" class="section active fade-in">
-      <div class="topbar">
-        <div>
-          <h2>Overview</h2>
-          <p style="font-size:13px;color:var(--muted);margin-top:4px;">All pages · Last 30 days</p>
-        </div>
-        <div class="topbar-actions">
-          <button class="btn btn-ghost" onclick="showSection('compose')">+ New Post</button>
-          <button class="btn btn-primary" onclick="openTokenModal()">⚙ Configure Tokens</button>
-        </div>
-      </div>
-
-      <!-- Page Tabs -->
-      <div class="page-tabs">
-        <div class="page-tab active" onclick="setTab('all', this)">All Pages</div>
-        <div class="page-tab lash" onclick="setTab('lash', this)"><span class="tab-dot"></span>Lash Rehab</div>
-        <div class="page-tab vaskly" onclick="setTab('vaskly', this)"><span class="tab-dot"></span>Vaskly.no</div>
-        <div class="page-tab lux" onclick="setTab('lux', this)"><span class="tab-dot"></span>LuxCement India</div>
-      </div>
-
-      <!-- Stats -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Total Reach</div>
-          <div class="stat-value" style="color:var(--accent)">48.2K</div>
-          <div class="stat-change up">↑ 12% this month</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Engagements</div>
-          <div class="stat-value" style="color:var(--accent2)">3,841</div>
-          <div class="stat-change up">↑ 8% this month</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Ad Spend</div>
-          <div class="stat-value" style="color:var(--lux)">€1,240</div>
-          <div class="stat-change down">↑ 5% vs last month</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Followers</div>
-          <div class="stat-value" style="color:var(--accent3)">12.7K</div>
-          <div class="stat-change up">↑ 3% this month</div>
-        </div>
-      </div>
-
-      <!-- Two col -->
-      <div class="two-col">
-        <!-- Recent Posts -->
-        <div class="card">
-          <div class="card-title">Recent Posts <span>Last 7 days</span></div>
-          <div class="post-item">
-            <div class="post-avatar" style="background:var(--lash)">LR</div>
-            <div class="post-content">
-              <div class="post-meta">Lash Rehab · Facebook · 2h ago</div>
-              <div class="post-text">✨ New lash extensions now available! Book your appointment today...</div>
-              <div class="post-stats">
-                <div class="post-stat">❤ 42</div>
-                <div class="post-stat">💬 8</div>
-                <div class="post-stat">↗ 120 reach</div>
-              </div>
-            </div>
-            <div class="post-badge badge-fb">FB</div>
-          </div>
-          <div class="post-item">
-            <div class="post-avatar" style="background:var(--vaskly)">VN</div>
-            <div class="post-content">
-              <div class="post-meta">Vaskly.no · Instagram · 1d ago</div>
-              <div class="post-text">🧹 Spring cleaning special — 20% off all services this week!</div>
-              <div class="post-stats">
-                <div class="post-stat">❤ 87</div>
-                <div class="post-stat">💬 14</div>
-                <div class="post-stat">↗ 540 reach</div>
-              </div>
-            </div>
-            <div class="post-badge badge-ig">IG</div>
-          </div>
-          <div class="post-item">
-            <div class="post-avatar" style="background:var(--lux)">LC</div>
-            <div class="post-content">
-              <div class="post-meta">LuxCement India · Facebook · 2d ago</div>
-              <div class="post-text">🏗 Our premium cement ensures strength & durability. Trusted by 10,000+ builders.</div>
-              <div class="post-stats">
-                <div class="post-stat">❤ 31</div>
-                <div class="post-stat">💬 5</div>
-                <div class="post-stat">↗ 890 reach</div>
-              </div>
-            </div>
-            <div class="post-badge badge-fb">FB</div>
-          </div>
-        </div>
-
-        <!-- Scheduled -->
-        <div class="card">
-          <div class="card-title">Upcoming Schedule <span id="schedule-count">0 scheduled</span></div>
-          <div id="schedule-list">
-            <div style="font-size:13px;color:var(--muted);padding:12px 0;text-align:center;">
-              No scheduled posts yet.<br>Use the ⏰ button when composing a post to schedule it.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Engagement chart -->
-      <div class="card">
-        <div class="card-title">Engagement This Week <span>All pages combined</span></div>
-        <div class="bar-chart">
-          <div class="bar-col"><div class="bar" style="height:45%;background:var(--accent)"></div><div class="bar-lbl">Mon</div></div>
-          <div class="bar-col"><div class="bar" style="height:70%;background:var(--accent)"></div><div class="bar-lbl">Tue</div></div>
-          <div class="bar-col"><div class="bar" style="height:55%;background:var(--accent)"></div><div class="bar-lbl">Wed</div></div>
-          <div class="bar-col"><div class="bar" style="height:90%;background:var(--accent2)"></div><div class="bar-lbl">Thu</div></div>
-          <div class="bar-col"><div class="bar" style="height:65%;background:var(--accent)"></div><div class="bar-lbl">Fri</div></div>
-          <div class="bar-col"><div class="bar" style="height:80%;background:var(--accent3)"></div><div class="bar-lbl">Sat</div></div>
-          <div class="bar-col"><div class="bar" style="height:50%;background:var(--accent)"></div><div class="bar-lbl">Sun</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- COMPOSE SECTION -->
-    <div id="section-compose" class="section fade-in">
-      <div class="topbar">
-        <h2>Post Content</h2>
-      </div>
-
-      <div class="composer">
-        <div class="composer-header">Create New Post</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Select pages to post to:</div>
-        <div class="composer-targets">
-          <div class="target-chip selected" onclick="toggleChip(this)"><span class="chip-dot" style="background:var(--lash)"></span>Lash Rehab · FB</div>
-          <div class="target-chip selected" onclick="toggleChip(this)"><span class="chip-dot" style="background:var(--lash)"></span>Lash Rehab · IG</div>
-          <div class="target-chip" onclick="toggleChip(this)"><span class="chip-dot" style="background:var(--vaskly)"></span>Vaskly.no · FB</div>
-          <div class="target-chip" onclick="toggleChip(this)"><span class="chip-dot" style="background:var(--vaskly)"></span>Vaskly.no · IG</div>
-          <div class="target-chip" onclick="toggleChip(this)"><span class="chip-dot" style="background:var(--lux)"></span>LuxCement · FB</div>
-          <div class="target-chip" onclick="toggleChip(this)"><span class="chip-dot" style="background:var(--lux)"></span>LuxCement · IG</div>
-        </div>
-        <textarea id="post-text" placeholder="Write your post content here... Use emojis, hashtags, and keep it engaging! ✨"></textarea>
-
-        <!-- Hidden file input -->
-        <input type="file" id="image-upload" accept="image/*" style="display:none" onchange="handleImageSelect(event)" />
-
-        <!-- Image preview area -->
-        <div id="image-preview-area" style="display:none;margin-top:12px;position:relative;">
-          <img id="image-preview" style="max-width:100%;max-height:220px;border-radius:8px;border:1px solid var(--border);object-fit:cover;" />
-          <button onclick="removeImage()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);border:none;color:white;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:14px;">✕</button>
-          <div id="image-name" style="font-size:11px;color:var(--muted);margin-top:6px;"></div>
-        </div>
-
-        <!-- Instagram Image URL field -->
-        <div id="ig-url-area" style="margin-top:12px;">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">📸 Instagram Image URL <span style="color:var(--accent)">(required for Instagram)</span></div>
-          <input type="text" id="ig-image-url" placeholder="https://i.imgur.com/your-image.jpg" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;" />
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Upload your image to <a href="https://imgur.com" target="_blank" style="color:var(--accent)">imgur.com</a> and paste the direct image link here for Instagram posting.</div>
-        </div>
-
-        <div class="composer-footer">
-          <div class="composer-options">
-            <div class="icon-btn" title="Add image" onclick="document.getElementById('image-upload').click()" style="cursor:pointer;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            </div>
-            <div class="icon-btn" title="Schedule post" onclick="openScheduleModal()" style="cursor:pointer;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-          </div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-ghost" onclick="saveDraft()">Save Draft</button>
-            <button class="btn btn-primary" onclick="simulatePost()">Publish Now</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Scheduled Posts -->
-      <div class="card" style="margin-bottom:16px;">
-        <div class="card-title">⏰ Scheduled Posts <span id="compose-schedule-count">0 scheduled</span></div>
-        <div id="compose-schedule-list">
-          <div style="font-size:13px;color:var(--muted);padding:16px 0;text-align:center;">
-            No scheduled posts yet.<br><br>
-            <strong style="color:var(--text);">How to schedule:</strong><br>
-            1. Write your post above<br>
-            2. Select your pages<br>
-            3. Click the <strong style="color:var(--accent);">⏰ clock icon</strong> button<br>
-            4. Pick a date & time and confirm
-          </div>
-        </div>
-      </div>
-
-      <!-- Drafts -->
-      <div class="card">
-        <div class="card-title">Saved Drafts <span>2 drafts</span></div>
-        <div class="post-item">
-          <div class="post-avatar" style="background:var(--lash)">LR</div>
-          <div class="post-content">
-            <div class="post-meta">Lash Rehab · Draft saved 1h ago</div>
-            <div class="post-text">Summer lash special — get volume lashes for the season! 🌸 Book now...</div>
-          </div>
-          <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px;align-self:center;" onclick="simulatePost()">Post</button>
-        </div>
-        <div class="post-item">
-          <div class="post-avatar" style="background:var(--vaskly)">VN</div>
-          <div class="post-content">
-            <div class="post-meta">Vaskly.no · Draft saved 3h ago</div>
-            <div class="post-text">We clean, you relax 🧹 Professional home cleaning from only 499kr...</div>
-          </div>
-          <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px;align-self:center;" onclick="simulatePost()">Post</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ADS SECTION -->
-    <div id="section-ads" class="section fade-in">
-      <div class="topbar">
-        <h2>Ads Manager</h2>
-        <button class="btn btn-primary">+ New Campaign</button>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Total Spend</div>
-          <div class="stat-value" style="color:var(--lux)">€1,240</div>
-          <div class="stat-change up">This month</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Impressions</div>
-          <div class="stat-value" style="color:var(--accent)">142K</div>
-          <div class="stat-change up">↑ 18%</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Clicks</div>
-          <div class="stat-value" style="color:var(--accent2)">4,821</div>
-          <div class="stat-change up">↑ 9%</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Avg. CPC</div>
-          <div class="stat-value" style="color:var(--accent3)">€0.26</div>
-          <div class="stat-change up">↓ 3% (better)</div>
-        </div>
-      </div>
-
-      <div class="three-col">
-        <!-- Lash Rehab Ads -->
-        <div class="card">
-          <div class="card-title" style="color:var(--lash)">Lash Rehab <span>2 active</span></div>
-          <div class="ad-card">
-            <div class="ad-header">
-              <div class="ad-name">Summer Lash Promo</div>
-              <div class="ad-status status-active">● Active</div>
-            </div>
-            <div class="ad-metrics">
-              <div class="ad-metric"><div class="ad-metric-val">€180</div><div class="ad-metric-lbl">Spent</div></div>
-              <div class="ad-metric"><div class="ad-metric-val">12K</div><div class="ad-metric-lbl">Reach</div></div>
-              <div class="ad-metric"><div class="ad-metric-val">3.2%</div><div class="ad-metric-lbl">CTR</div></div>
-            </div>
-          </div>
-          <div class="ad-card">
-            <div class="ad-header">
-              <div class="ad-name">Booking Campaign</div>
-              <div class="ad-status status-paused">⏸ Paused</div>
-            </div>
-            <div class="ad-metrics">
-              <div class="ad-metric"><div class="ad-metric-val">€95</div><div class="ad-metric-lbl">Spent</div></div>
-              <div class="ad-metric"><div class="ad-metric-val">6.4K</div><div class="ad-metric-lbl">Reach</div></div>
-              <div class="ad-metric"><div class="ad-metric-val">2.1%</div><div class="ad-metric-lbl">CTR</div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Vaskly Ads -->
-        <div class="card">
-          <div class="card-title" style="color:var(--vaskly)">Vaskly.no <span>2 active</span></div>
-          <div class="ad-card">
-            <div class="ad-header">
-              <div class="ad-name">Spring Cleaning Offer</div>
-              <div class="ad-status status-active">● Active</div>
-            </div>
-            <div class="ad-metrics">
-              <div class="ad-metric"><div class="ad-metric-val">€240</div><div class="ad-metric-lbl">Spent</div></div>
-              <div class="ad-metric"><div class="ad-metric-val">28K</div><div class="ad-metric-lbl">Reach</div></div>
-              <div class="ad-metric"><div class="ad-metric-val">4.1%</div><div class="ad-metric-lbl">CTR</div></div>
-            </div>
-          </div>
-          <div class="ad-card">
-            <div class="ad-header">
-              <div class="ad-name">Local Awareness</div>
-              <div class="ad-status status-active">● Active</div>
-            </div>
-            <div class="ad-metrics">
-              <div class="ad-metric"><div class="ad-metric-val">€120</div><div class="ad-metric-lbl">Spent</div></div>
-              <div class="ad-metric"><div class="ad-metric-val">18K</div><div class="ad-metric-lbl">Reach</div></div>
-              <div class="ad-metric"><div class="ad-metric-val">2.8%</div><div class="ad-metric-lbl">CTR</div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- LuxCement Ads -->
-        <div class="card">
-          <div class="card-title" style="color:var(--lux)">LuxCement India <span>1 active</span></div>
-          <div class="ad-card">
-            <div class="ad-header">
-              <div class="ad-name">Builder Awareness</div>
-              <div class="ad-status status-active">● Active</div>
-            </div>
-            <div class="ad-metrics">
-              <div class="ad-metric"><div class="ad-metric-val">€380</div><div class="ad-metric-lbl">Spent</div></div>
-              <div class="ad-metric"><div class="ad-metric-val">52K</div><div class="ad-metric-lbl">Reach</div></div>
-              <div class="ad-metric"><div class="ad-metric-val">1.9%</div><div class="ad-metric-lbl">CTR</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ANALYTICS SECTION -->
-    <div id="section-stats" class="section fade-in">
-      <div class="topbar">
-        <h2>Analytics</h2>
-      </div>
-
-      <div class="three-col">
-        <div class="card">
-          <div class="card-title" style="color:var(--lash)">Lash Rehab</div>
-          <div style="margin-bottom:12px;">
-            <div class="stat-label">Page Followers</div>
-            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;">3,241</div>
-          </div>
-          <div style="margin-bottom:12px;">
-            <div class="stat-label">Instagram Followers</div>
-            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;">5,820</div>
-          </div>
-          <div>
-            <div class="stat-label">Avg. Reach / Post</div>
-            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;">1,240</div>
-          </div>
-          <div class="bar-chart" style="margin-top:16px;">
-            <div class="bar-col"><div class="bar" style="height:60%;background:var(--lash)"></div><div class="bar-lbl">W1</div></div>
-            <div class="bar-col"><div class="bar" style="height:75%;background:var(--lash)"></div><div class="bar-lbl">W2</div></div>
-            <div class="bar-col"><div class="bar" style="height:50%;background:var(--lash)"></div><div class="bar-lbl">W3</div></div>
-            <div class="bar-col"><div class="bar" style="height:90%;background:var(--lash)"></div><div class="bar-lbl">W4</div></div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title" style="color:var(--vaskly)">Vaskly.no</div>
-          <div style="margin-bottom:12px;">
-            <div class="stat-label">Page Followers</div>
-            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;">1,892</div>
-          </div>
-          <div style="margin-bottom:12px;">
-            <div class="stat-label">Instagram Followers</div>
-            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;">2,140</div>
-          </div>
-          <div>
-            <div class="stat-label">Avg. Reach / Post</div>
-            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;">820</div>
-          </div>
-          <div class="bar-chart" style="margin-top:16px;">
-            <div class="bar-col"><div class="bar" style="height:40%;background:var(--vaskly)"></div><div class="bar-lbl">W1</div></div>
-            <div class="bar-col"><div class="bar" style="height:65%;background:var(--vaskly)"></div><div class="bar-lbl">W2</div></div>
-            <div class="bar-col"><div class="bar" style="height:80%;background:var(--vaskly)"></div><div class="bar-lbl">W3</div></div>
-            <div class="bar-col"><div class="bar" style="height:55%;background:var(--vaskly)"></div><div class="bar-lbl">W4</div></div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title" style="color:var(--lux)">LuxCement India</div>
-          <div style="margin-bottom:12px;">
-            <div class="stat-label">Page Followers</div>
-            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;">8,410</div>
-          </div>
-          <div style="margin-bottom:12px;">
-            <div class="stat-label">Instagram Followers</div>
-            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;">1,240</div>
-          </div>
-          <div>
-            <div class="stat-label">Avg. Reach / Post</div>
-            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;">4,100</div>
-          </div>
-          <div class="bar-chart" style="margin-top:16px;">
-            <div class="bar-col"><div class="bar" style="height:70%;background:var(--lux)"></div><div class="bar-lbl">W1</div></div>
-            <div class="bar-col"><div class="bar" style="height:55%;background:var(--lux)"></div><div class="bar-lbl">W2</div></div>
-            <div class="bar-col"><div class="bar" style="height:85%;background:var(--lux)"></div><div class="bar-lbl">W3</div></div>
-            <div class="bar-col"><div class="bar" style="height:65%;background:var(--lux)"></div><div class="bar-lbl">W4</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SETTINGS SECTION -->
-    <div id="section-settings" class="section fade-in">
-      <div class="topbar">
-        <h2>Settings</h2>
-      </div>
-
-      <div class="two-col">
-        <div class="card">
-          <div class="card-title">Page Access Tokens</div>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Paste your access tokens from the Meta Graph API Explorer. These are required to post and fetch data.</p>
-
-          <div style="margin-bottom:16px;">
-            <div style="font-size:12px;color:var(--lash);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--lash);display:inline-block;"></span>Lash Rehab — Facebook Token</div>
-            <input class="token-input" id="token-lash-fb" placeholder="EAAMPRK4XYao..." />
-          </div>
-          <div style="margin-bottom:16px;">
-            <div style="font-size:12px;color:var(--lash);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--lash);display:inline-block;"></span>Lash Rehab — Instagram Token</div>
-            <input class="token-input" id="token-lash-ig" placeholder="EAAMPRK4XYao..." />
-          </div>
-          <div style="margin-bottom:16px;">
-            <div style="font-size:12px;color:var(--vaskly);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--vaskly);display:inline-block;"></span>Vaskly.no — Facebook Token</div>
-            <input class="token-input" id="token-vaskly-fb" placeholder="EAAMPRK4XYao..." />
-          </div>
-          <div style="margin-bottom:16px;">
-            <div style="font-size:12px;color:var(--vaskly);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--vaskly);display:inline-block;"></span>Vaskly.no — Instagram Token</div>
-            <input class="token-input" id="token-vaskly-ig" placeholder="EAAMPRK4XYao..." />
-          </div>
-          <div style="margin-bottom:16px;">
-            <div style="font-size:12px;color:var(--lux);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--lux);display:inline-block;"></span>LuxCement India — Facebook Token</div>
-            <input class="token-input" id="token-lux-fb" placeholder="EAAMPRK4XYao..." />
-          </div>
-
-          <div style="margin:20px 0 12px;padding-top:16px;border-top:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text);">📸 Instagram Tokens</div>
-
-          <div style="margin-bottom:16px;">
-            <div style="font-size:12px;color:var(--lash);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--lash);display:inline-block;"></span>Lash Rehab — Instagram Token</div>
-            <input class="token-input" id="token-lash-ig-direct" placeholder="IGAAVmp..." />
-          </div>
-          <div style="margin-bottom:16px;">
-            <div style="font-size:12px;color:var(--vaskly);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--vaskly);display:inline-block;"></span>Vaskly.no — Instagram Token</div>
-            <input class="token-input" id="token-vaskly-ig-direct" placeholder="IGAAVmp..." />
-          </div>
-          <div style="margin-bottom:16px;">
-            <div style="font-size:12px;color:var(--lux);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--lux);display:inline-block;"></span>LuxCement India — Instagram Token</div>
-            <input class="token-input" id="token-lux-ig-direct" placeholder="IGAAVmp..." />
-          </div>
-
-          <button class="btn btn-primary" onclick="saveTokens()" style="width:100%;margin-top:8px;">Save Tokens</button>
-        </div>
-
-        <div class="card">
-          <div class="card-title">App Info</div>
-          <div style="font-size:13px;color:var(--muted);line-height:1.8;">
-            <div style="margin-bottom:12px;"><strong style="color:var(--text);">App Name:</strong> Shepard</div>
-            <div style="margin-bottom:12px;"><strong style="color:var(--text);">Owner:</strong> Valluvan Nathan</div>
-            <div style="margin-bottom:12px;"><strong style="color:var(--text);">Pages Connected:</strong> 3</div>
-            <div style="margin-bottom:12px;"><strong style="color:var(--text);">API Version:</strong> v25.0</div>
-            <div style="margin-bottom:12px;"><strong style="color:var(--text);">Status:</strong> <span style="color:var(--accent3);">● Connected</span></div>
-          </div>
-          <div style="margin-top:20px;padding:14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">
-            <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">⚠ Token Expiry Notice</div>
-            <div style="font-size:13px;">Your user access tokens expire in <strong>60 days</strong>. You'll need to regenerate them in the Graph API Explorer before then.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </main>
-</div>
-
-
-<!-- Schedule Modal -->
-<div class="schedule-modal" id="scheduleModal">
-  <div class="modal">
-    <h3>⏰ Schedule Post</h3>
-    <p>Choose a date and time to automatically publish this post.</p>
-    <div class="field-group">
-      <div class="field-label">Date & Time</div>
-      <input type="datetime-local" id="schedule-datetime" />
-    </div>
-    <div class="field-group">
-      <div class="field-label">Note (optional)</div>
-      <input type="text" id="schedule-note" placeholder="e.g. Weekend promo post" />
-    </div>
-    <div style="background:rgba(124,92,252,0.08);border:1px solid rgba(124,92,252,0.2);border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:var(--muted);">
-      ℹ️ Your post text and selected pages will be saved with this schedule. The post will be queued and you can manage it in the <strong style="color:var(--text);">Upcoming Schedule</strong> on the Overview page.
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeScheduleModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="confirmSchedule()">⏰ Schedule Post</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Engagement This Week <span>All pages</span></div>
+    <div class="bar-chart" id="engagement-chart">
+      <div class="bar-col"><div class="bar" style="height:45%;background:var(--accent)"></div><div class="bar-lbl">Mon</div></div>
+      <div class="bar-col"><div class="bar" style="height:70%;background:var(--accent)"></div><div class="bar-lbl">Tue</div></div>
+      <div class="bar-col"><div class="bar" style="height:55%;background:var(--accent)"></div><div class="bar-lbl">Wed</div></div>
+      <div class="bar-col"><div class="bar" style="height:90%;background:var(--accent2)"></div><div class="bar-lbl">Thu</div></div>
+      <div class="bar-col"><div class="bar" style="height:65%;background:var(--accent)"></div><div class="bar-lbl">Fri</div></div>
+      <div class="bar-col"><div class="bar" style="height:80%;background:var(--accent3)"></div><div class="bar-lbl">Sat</div></div>
+      <div class="bar-col"><div class="bar" style="height:50%;background:var(--accent)"></div><div class="bar-lbl">Sun</div></div>
     </div>
   </div>
 </div>
 
-<!-- Scheduled Posts Manager (in Overview) -->
+<!-- POST CONTENT -->
+<div id="section-compose" class="section fade-in">
+  <div class="topbar"><h2>Post Content</h2></div>
+  <div class="composer">
+    <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px">Create New Post</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Select pages:</div>
+    <div class="composer-targets">
+      <div class="target-chip selected" onclick="toggleChip(this)"><span class="chip-dot" style="background:var(--lash)"></span>Lash Rehab · FB</div>
+      <div class="target-chip selected" onclick="toggleChip(this)"><span class="chip-dot" style="background:var(--lash)"></span>Lash Rehab · IG</div>
+      <div class="target-chip" onclick="toggleChip(this)"><span class="chip-dot" style="background:var(--vaskly)"></span>Vaskly.no · FB</div>
+      <div class="target-chip" onclick="toggleChip(this)"><span class="chip-dot" style="background:var(--vaskly)"></span>Vaskly.no · IG</div>
+      <div class="target-chip" onclick="toggleChip(this)"><span class="chip-dot" style="background:var(--lux)"></span>LuxCement · FB</div>
+      <div class="target-chip" onclick="toggleChip(this)"><span class="chip-dot" style="background:var(--lux)"></span>LuxCement · IG</div>
+    </div>
+    <textarea id="post-text" placeholder="Write your post content here..."></textarea>
+    <input type="file" id="image-upload" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
+    <div id="image-preview-area" style="display:none;margin-top:12px;position:relative">
+      <img id="image-preview" style="max-width:100%;max-height:220px;border-radius:8px;border:1px solid var(--border);object-fit:cover">
+      <button onclick="removeImage()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);border:none;color:white;border-radius:50%;width:26px;height:26px;cursor:pointer">✕</button>
+      <div id="image-name" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
+    </div>
+    <div id="ig-url-area" style="margin-top:12px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">📸 Instagram Image URL <span style="color:var(--accent)">(required for IG posting)</span></div>
+      <input type="text" id="ig-image-url" placeholder="https://i.imgur.com/your-image.jpg">
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Upload to <a href="https://imgur.com" target="_blank" style="color:var(--accent)">imgur.com</a> and paste the direct link</div>
+    </div>
+    <div class="composer-footer">
+      <div class="composer-options">
+        <div class="icon-btn" title="Add image" onclick="document.getElementById('image-upload').click()">🖼</div>
+        <div class="icon-btn" title="Schedule" onclick="openScheduleModal()">⏰</div>
+        <div class="icon-btn" title="AI Caption" onclick="generateAICaption()">✨</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="saveDraft()">Save Draft</button>
+        <button class="btn btn-primary" onclick="publishPost()">Publish Now</button>
+      </div>
+    </div>
+  </div>
 
-<!-- Notification -->
-<div class="notif" id="notif"></div>
+  <!-- AI Captions -->
+  <div class="card" style="margin-bottom:16px" id="ai-section" style="display:none">
+    <div class="card-title">✨ AI Caption Suggestions <span id="ai-status">Click ✨ to generate</span></div>
+    <div id="ai-suggestions"></div>
+  </div>
+
+  <!-- Scheduled Posts -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">⏰ Scheduled Posts <span id="compose-schedule-count">0 scheduled</span></div>
+    <div id="compose-schedule-list"><div style="font-size:13px;color:var(--muted);padding:12px 0;text-align:center">No scheduled posts yet</div></div>
+  </div>
+</div>
+
+<!-- CALENDAR -->
+<div id="section-calendar" class="section fade-in">
+  <div class="topbar">
+    <div><h2>Content Calendar</h2></div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn btn-ghost btn-sm" onclick="changeMonth(-1)">← Prev</button>
+      <span id="cal-month-label" style="font-size:14px;font-weight:600"></span>
+      <button class="btn btn-ghost btn-sm" onclick="changeMonth(1)">Next →</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="calendar-grid" id="cal-headers"></div>
+    <div class="calendar-grid" id="cal-days" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- COMMENTS -->
+<div id="section-comments" class="section fade-in">
+  <div class="topbar"><h2>Comments & Messages</h2></div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Recent Comments <span>From Facebook</span></div>
+      <div id="comments-list">
+        <div style="font-size:13px;color:var(--muted);padding:20px 0;text-align:center">Save tokens to load comments</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Quick Reply</div>
+      <div id="reply-target" style="font-size:13px;color:var(--muted);margin-bottom:12px">Select a comment to reply</div>
+      <textarea id="reply-text" placeholder="Type your reply..." style="margin-bottom:12px"></textarea>
+      <button class="btn btn-primary" style="width:100%" onclick="sendReply()">Send Reply</button>
+    </div>
+  </div>
+</div>
+
+<!-- ANALYTICS -->
+<div id="section-analytics" class="section fade-in">
+  <div class="topbar"><h2>Analytics</h2></div>
+  <div class="three-col">
+    <div class="card">
+      <div class="card-title" style="color:var(--lash)">Lash Rehab</div>
+      <div style="margin-bottom:12px"><div class="stat-label">Page Followers</div><div id="lash-followers" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">—</div></div>
+      <div style="margin-bottom:12px"><div class="stat-label">Posts This Month</div><div id="lash-posts" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">—</div></div>
+      <div style="margin-bottom:12px"><div class="stat-label">Engagement Rate</div><div id="lash-engage" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">—</div></div>
+      <div class="bar-chart">
+        <div class="bar-col"><div class="bar" style="height:60%;background:var(--lash)"></div><div class="bar-lbl">W1</div></div>
+        <div class="bar-col"><div class="bar" style="height:75%;background:var(--lash)"></div><div class="bar-lbl">W2</div></div>
+        <div class="bar-col"><div class="bar" style="height:50%;background:var(--lash)"></div><div class="bar-lbl">W3</div></div>
+        <div class="bar-col"><div class="bar" style="height:90%;background:var(--lash)"></div><div class="bar-lbl">W4</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--vaskly)">Vaskly.no</div>
+      <div style="margin-bottom:12px"><div class="stat-label">Page Followers</div><div id="vaskly-followers" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">—</div></div>
+      <div style="margin-bottom:12px"><div class="stat-label">Posts This Month</div><div id="vaskly-posts" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">—</div></div>
+      <div style="margin-bottom:12px"><div class="stat-label">Engagement Rate</div><div id="vaskly-engage" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">—</div></div>
+      <div class="bar-chart">
+        <div class="bar-col"><div class="bar" style="height:40%;background:var(--vaskly)"></div><div class="bar-lbl">W1</div></div>
+        <div class="bar-col"><div class="bar" style="height:65%;background:var(--vaskly)"></div><div class="bar-lbl">W2</div></div>
+        <div class="bar-col"><div class="bar" style="height:80%;background:var(--vaskly)"></div><div class="bar-lbl">W3</div></div>
+        <div class="bar-col"><div class="bar" style="height:55%;background:var(--vaskly)"></div><div class="bar-lbl">W4</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--lux)">LuxCement India</div>
+      <div style="margin-bottom:12px"><div class="stat-label">Page Followers</div><div id="lux-followers" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">—</div></div>
+      <div style="margin-bottom:12px"><div class="stat-label">Posts This Month</div><div id="lux-posts" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">—</div></div>
+      <div style="margin-bottom:12px"><div class="stat-label">Engagement Rate</div><div id="lux-engage" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">—</div></div>
+      <div class="bar-chart">
+        <div class="bar-col"><div class="bar" style="height:70%;background:var(--lux)"></div><div class="bar-lbl">W1</div></div>
+        <div class="bar-col"><div class="bar" style="height:55%;background:var(--lux)"></div><div class="bar-lbl">W2</div></div>
+        <div class="bar-col"><div class="bar" style="height:85%;background:var(--lux)"></div><div class="bar-lbl">W3</div></div>
+        <div class="bar-col"><div class="bar" style="height:65%;background:var(--lux)"></div><div class="bar-lbl">W4</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Top Performing Posts <span>Last 30 days</span></div>
+    <div id="top-posts-list"><div style="font-size:13px;color:var(--muted);padding:20px 0;text-align:center">Save tokens to load analytics</div></div>
+  </div>
+</div>
+
+<!-- ADS -->
+<div id="section-ads" class="section fade-in">
+  <div class="topbar"><h2>Ads Manager</h2><button class="btn btn-primary">+ New Campaign</button></div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Total Spend</div><div class="stat-value" style="color:var(--lux)">€1,240</div><div class="stat-change up">This month</div></div>
+    <div class="stat-card"><div class="stat-label">Impressions</div><div class="stat-value" style="color:var(--accent)">142K</div><div class="stat-change up">↑ 18%</div></div>
+    <div class="stat-card"><div class="stat-label">Clicks</div><div class="stat-value" style="color:var(--accent2)">4,821</div><div class="stat-change up">↑ 9%</div></div>
+    <div class="stat-card"><div class="stat-label">Avg. CPC</div><div class="stat-value" style="color:var(--accent3)">€0.26</div><div class="stat-change up">↓ 3%</div></div>
+  </div>
+  <div class="three-col">
+    <div class="card">
+      <div class="card-title" style="color:var(--lash)">Lash Rehab</div>
+      <div style="background:var(--surface2);border-radius:10px;padding:16px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:12px"><span style="font-size:13px">Summer Lash Promo</span><span style="font-size:10px;padding:3px 8px;border-radius:10px;background:rgba(92,248,200,0.15);color:var(--accent3)">● Active</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+          <div><div style="font-size:16px;font-weight:700">€180</div><div style="font-size:10px;color:var(--muted)">Spent</div></div>
+          <div><div style="font-size:16px;font-weight:700">12K</div><div style="font-size:10px;color:var(--muted)">Reach</div></div>
+          <div><div style="font-size:16px;font-weight:700">3.2%</div><div style="font-size:10px;color:var(--muted)">CTR</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--vaskly)">Vaskly.no</div>
+      <div style="background:var(--surface2);border-radius:10px;padding:16px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:12px"><span style="font-size:13px">Spring Cleaning Offer</span><span style="font-size:10px;padding:3px 8px;border-radius:10px;background:rgba(92,248,200,0.15);color:var(--accent3)">● Active</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+          <div><div style="font-size:16px;font-weight:700">€240</div><div style="font-size:10px;color:var(--muted)">Spent</div></div>
+          <div><div style="font-size:16px;font-weight:700">28K</div><div style="font-size:10px;color:var(--muted)">Reach</div></div>
+          <div><div style="font-size:16px;font-weight:700">4.1%</div><div style="font-size:10px;color:var(--muted)">CTR</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--lux)">LuxCement India</div>
+      <div style="background:var(--surface2);border-radius:10px;padding:16px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:12px"><span style="font-size:13px">Builder Awareness</span><span style="font-size:10px;padding:3px 8px;border-radius:10px;background:rgba(92,248,200,0.15);color:var(--accent3)">● Active</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+          <div><div style="font-size:16px;font-weight:700">€380</div><div style="font-size:10px;color:var(--muted)">Spent</div></div>
+          <div><div style="font-size:16px;font-weight:700">52K</div><div style="font-size:10px;color:var(--muted)">Reach</div></div>
+          <div><div style="font-size:16px;font-weight:700">1.9%</div><div style="font-size:10px;color:var(--muted)">CTR</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="section-settings" class="section fade-in">
+  <div class="topbar"><h2>Settings</h2></div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Facebook Page Tokens</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">From Graph API Explorer → me/accounts</p>
+      <div style="margin-bottom:12px"><div style="font-size:12px;color:var(--lash);margin-bottom:6px">Lash Rehab — FB Token</div><input class="token-input" id="token-lash-fb" placeholder="EAAMPRK4XYao..."></div>
+      <div style="margin-bottom:12px"><div style="font-size:12px;color:var(--vaskly);margin-bottom:6px">Vaskly.no — FB Token</div><input class="token-input" id="token-vaskly-fb" placeholder="EAAMPRK4XYao..."></div>
+      <div style="margin-bottom:16px"><div style="font-size:12px;color:var(--lux);margin-bottom:6px">LuxCement India — FB Token</div><input class="token-input" id="token-lux-fb" placeholder="EAAMPRK4XYao..."></div>
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;padding-top:12px;border-top:1px solid var(--border)">📸 Instagram Tokens</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">From Instagram API Setup → Generate token</p>
+      <div style="margin-bottom:12px"><div style="font-size:12px;color:var(--lash);margin-bottom:6px">Lash Rehab — IG Token</div><input class="token-input" id="token-lash-ig-direct" placeholder="IGAAVmp..."></div>
+      <div style="margin-bottom:12px"><div style="font-size:12px;color:var(--vaskly);margin-bottom:6px">Vaskly.no — IG Token</div><input class="token-input" id="token-vaskly-ig-direct" placeholder="IGAAVmp..."></div>
+      <div style="margin-bottom:16px"><div style="font-size:12px;color:var(--lux);margin-bottom:6px">LuxCement — IG Token</div><input class="token-input" id="token-lux-ig-direct" placeholder="IGAAVmp..."></div>
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;padding-top:12px;border-top:1px solid var(--border)">🤖 AI Features</div>
+      <div style="margin-bottom:16px"><div style="font-size:12px;color:var(--muted);margin-bottom:6px">The AI caption generator uses Claude AI — no extra setup needed!</div></div>
+      <button class="btn btn-primary" onclick="saveTokens()" style="width:100%">Save All Tokens</button>
+    </div>
+    <div class="card">
+      <div class="card-title">App Info</div>
+      <div style="font-size:13px;color:var(--muted);line-height:2">
+        <div><strong style="color:var(--text)">App:</strong> Shepard v2.0</div>
+        <div><strong style="color:var(--text)">Owner:</strong> Valluvan Nathan</div>
+        <div><strong style="color:var(--text)">Pages:</strong> 3 connected</div>
+        <div><strong style="color:var(--text)">Status:</strong> <span style="color:var(--accent3)">● Published</span></div>
+        <div><strong style="color:var(--text)">Instagram IDs:</strong></div>
+        <div style="font-size:11px;font-family:monospace;margin-top:4px">Lash: 17841416565693300</div>
+        <div style="font-size:11px;font-family:monospace">Vaskly: 17841441504891811</div>
+        <div style="font-size:11px;font-family:monospace">LuxCement: 17841441832722744</div>
+      </div>
+      <div style="margin-top:20px;padding:14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">⚠ Token Expiry</div>
+        <div style="font-size:13px">Facebook tokens expire in <strong>60 days</strong>. Regenerate in Graph API Explorer.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- Schedule Modal -->
+<div class="modal-overlay" id="scheduleModal">
+  <div class="modal">
+    <h3>⏰ Schedule Post</h3>
+    <p>Choose when to publish this post automatically.</p>
+    <div style="margin-bottom:16px"><div style="font-size:12px;color:var(--muted);margin-bottom:6px">Date & Time</div><input type="datetime-local" id="schedule-datetime"></div>
+    <div style="margin-bottom:16px"><div style="font-size:12px;color:var(--muted);margin-bottom:6px">Note (optional)</div><input type="text" id="schedule-note" placeholder="e.g. Weekend promo"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('scheduleModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmSchedule()">Schedule Post</button>
+    </div>
+  </div>
+</div>
 
 <!-- Token Modal -->
 <div class="modal-overlay" id="tokenModal">
   <div class="modal">
-    <h3>Configure Access Tokens</h3>
-    <p>Go to Settings to enter your Facebook Page access tokens. These are needed to connect your real data.</p>
+    <h3>Configure Tokens</h3>
+    <p>Go to Settings to enter your access tokens.</p>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeTokenModal()">Close</button>
-      <button class="btn btn-primary" onclick="closeTokenModal();showSection('settings')">Go to Settings</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('tokenModal').classList.remove('open')">Close</button>
+      <button class="btn btn-primary" onclick="document.getElementById('tokenModal').classList.remove('open');showSection('settings',null)">Go to Settings</button>
     </div>
   </div>
 </div>
 
+<div class="notif" id="notif"></div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
 <script>
-  // ── Token storage ──────────────────────────────────────────────
-  const PAGE_IDS = {
-    'lash-fb':   '905199359836693',
-    'lash-ig':   '17841416565693300',
-    'vaskly-fb': '492722030599321',
-    'vaskly-ig': '17841441504891811',
-    'lux-fb':    '1011642565365855',
-    'lux-ig':    '17841441832722744',
+const PAGE_IDS = {
+  'lash-fb':'905199359836693',
+  'vaskly-fb':'492722030599321',
+  'lux-fb':'1011642565365855',
+  'lash-ig':'17841416565693300',
+  'vaskly-ig':'17841441504891811',
+  'lux-ig':'17841441832722744'
+};
+
+function getTokens(){return JSON.parse(localStorage.getItem('shepard_tokens')||'{}')}
+
+function saveTokens(){
+  const keys=['lash-fb','vaskly-fb','lux-fb','lash-ig-direct','vaskly-ig-direct','lux-ig-direct'];
+  const t={};
+  keys.forEach(k=>{
+    const el=document.getElementById('token-'+k);
+    if(el&&el.value.trim()) t[k]=el.value.trim();
+  });
+  localStorage.setItem('shepard_tokens',JSON.stringify(t));
+  showNotif('✅ Tokens saved! Loading real data...');
+  setTimeout(()=>fetchAllData(),800);
+}
+
+function loadSavedTokens(){
+  const t=getTokens();
+  Object.keys(t).forEach(k=>{
+    const el=document.getElementById('token-'+k);
+    if(el) el.value=t[k];
+  });
+}
+
+async function fetchAllData(){
+  const t=getTokens();
+  if(!Object.keys(t).length) return;
+  let totalFollowers=0;
+  const pages=[
+    {key:'lash-fb',label:'Lash Rehab',color:'var(--lash)',initials:'LR',fid:'lash',vid:'lash-followers'},
+    {key:'vaskly-fb',label:'Vaskly.no',color:'var(--vaskly)',initials:'VN',fid:'vaskly',vid:'vaskly-followers'},
+    {key:'lux-fb',label:'LuxCement',color:'var(--lux)',initials:'LC',fid:'lux',vid:'lux-followers'}
+  ];
+  const allPosts=[];
+  for(const p of pages){
+    if(!t[p.key]) continue;
+    const id=PAGE_IDS[p.key];
+    try{
+      const info=await fetch(`https://graph.facebook.com/v25.0/${id}?fields=name,fan_count,followers_count,posts_count&access_token=${t[p.key]}`).then(r=>r.json());
+      if(!info.error){
+        const fans=info.fan_count||info.followers_count||0;
+        totalFollowers+=fans;
+        const el=document.getElementById(p.vid);
+        if(el) el.textContent=fans>1000?(fans/1000).toFixed(1)+'K':fans;
+        const postEl=document.getElementById(p.fid+'-posts');
+        if(postEl) postEl.textContent='—';
+        const engEl=document.getElementById(p.fid+'-engage');
+        if(engEl) engEl.textContent='—';
+      }
+      const posts=await fetch(`https://graph.facebook.com/v25.0/${id}/posts?fields=message,created_time,likes.summary(true),comments.summary(true)&limit=5&access_token=${t[p.key]}`).then(r=>r.json());
+      if(posts.data) posts.data.forEach(post=>allPosts.push({...post,pageLabel:p.label,color:p.color,initials:p.initials}));
+    }catch(e){console.error(e)}
+  }
+  if(totalFollowers>0){
+    const el=document.getElementById('stat-followers');
+    if(el) el.textContent=totalFollowers>1000?(totalFollowers/1000).toFixed(1)+'K':totalFollowers;
+  }
+  if(allPosts.length) renderRecentPosts(allPosts);
+  renderScheduledPosts();
+  showNotif('✅ Real data loaded!');
+}
+
+function renderRecentPosts(posts){
+  const list=document.getElementById('recent-posts-list');
+  if(!list) return;
+  list.innerHTML='';
+  posts.slice(0,5).forEach(post=>{
+    const likes=post.likes?.summary?.total_count||0;
+    const comments=post.comments?.summary?.total_count||0;
+    const date=post.created_time?new Date(post.created_time).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'';
+    const msg=post.message?post.message.substring(0,80)+(post.message.length>80?'...':''):'(No text)';
+    const el=document.createElement('div');
+    el.className='post-item';
+    el.innerHTML=`<div class="post-avatar" style="background:${post.color}">${post.initials}</div><div class="post-content"><div class="post-meta">${post.pageLabel} · ${date}</div><div class="post-text">${msg}</div><div class="post-stats"><div class="post-stat">❤ ${likes}</div><div class="post-stat">💬 ${comments}</div></div></div>`;
+    list.appendChild(el);
+  });
+}
+
+function showSection(name,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const sec=document.getElementById('section-'+name);
+  if(sec) sec.classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(name==='calendar') renderCalendar();
+  if(name==='comments') loadComments();
+  if(name==='analytics') fetchAnalytics();
+}
+
+function toggleChip(el){el.classList.toggle('selected')}
+
+let selectedImageFile=null,selectedImageBase64=null;
+
+function handleImageSelect(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  if(file.size>10*1024*1024){showNotif('Image too large! Max 10MB.');return}
+  selectedImageFile=file;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    selectedImageBase64=ev.target.result;
+    document.getElementById('image-preview').src=selectedImageBase64;
+    document.getElementById('image-preview-area').style.display='block';
+    document.getElementById('image-name').textContent='📎 '+file.name;
+    showNotif('✅ Image selected: '+file.name);
   };
+  reader.readAsDataURL(file);
+}
 
-  function getTokens() {
-    return JSON.parse(localStorage.getItem('shepard_tokens') || '{}');
-  }
+function removeImage(){
+  selectedImageFile=null;selectedImageBase64=null;
+  document.getElementById('image-upload').value='';
+  document.getElementById('image-preview-area').style.display='none';
+}
 
-  function saveTokens() {
-    const ids = ['lash-fb','lash-ig','vaskly-fb','vaskly-ig','lux-fb'];
-    const tokens = {};
-    ids.forEach(id => {
-      const val = document.getElementById('token-' + id).value.trim();
-      if (val) tokens[id] = val;
-    });
-    // Also save direct Instagram tokens
-    const igIds = ['lash-ig-direct','vaskly-ig-direct','lux-ig-direct'];
-    igIds.forEach(id => {
-      const el = document.getElementById('token-' + id);
-      if (el && el.value.trim()) tokens[id] = el.value.trim();
-    });
-    localStorage.setItem('shepard_tokens', JSON.stringify(tokens));
-    showNotif('✅ Tokens saved! Fetching real data...');
-    setTimeout(() => fetchAllData(), 800);
-  }
+function saveDraft(){showNotif('✅ Draft saved!')}
 
-  function loadSavedTokensIntoInputs() {
-    const tokens = getTokens();
-    Object.keys(tokens).forEach(id => {
-      const el = document.getElementById('token-' + id) || document.getElementById('token-' + id + '-direct');
-      if (el) el.value = tokens[id];
-      // Also try direct IG fields
-      const directEl = document.getElementById('token-' + id + '-direct');
-      if (directEl && tokens[id + '-direct']) directEl.value = tokens[id + '-direct'];
-    });
-  }
-
-  // ── Graph API helper ───────────────────────────────────────────
-  async function graphGet(pageId, token, fields) {
-    const url = `https://graph.facebook.com/v25.0/${pageId}?fields=${fields}&access_token=${token}`;
-    try {
-      const r = await fetch(url);
-      return await r.json();
-    } catch(e) {
-      return { error: e.message };
-    }
-  }
-
-  async function graphGetEdge(pageId, token, edge, fields) {
-    const url = `https://graph.facebook.com/v25.0/${pageId}/${edge}?fields=${fields}&limit=5&access_token=${token}`;
-    try {
-      const r = await fetch(url);
-      return await r.json();
-    } catch(e) {
-      return { error: e.message };
-    }
-  }
-
-  // ── Fetch all real data ────────────────────────────────────────
-  async function fetchAllData() {
-    const tokens = getTokens();
-    if (!Object.keys(tokens).length) return;
-
-    const pages = [
-      { key: 'lash-fb',   label: 'Lash Rehab',      color: 'var(--lash)',   initials: 'LR' },
-      { key: 'vaskly-fb', label: 'Vaskly.no',        color: 'var(--vaskly)', initials: 'VN' },
-      { key: 'lux-fb',    label: 'LuxCement India',  color: 'var(--lux)',    initials: 'LC' },
-    ];
-
-    let totalFollowers = 0, totalReach = 0, totalPosts = 0;
-    const allPosts = [];
-
-    // Fetch page info + posts for each page
-    for (const page of pages) {
-      const token = tokens[page.key];
-      if (!token) continue;
-      const id = PAGE_IDS[page.key];
-
-      // Page info
-      const info = await graphGet(id, token, 'name,fan_count,followers_count');
-      if (!info.error) {
-        const fans = info.fan_count || info.followers_count || 0;
-        totalFollowers += fans;
-        updatePageFollowers(page.key, fans, page.label);
+async function publishPost(){
+  const t=getTokens();
+  const msg=document.getElementById('post-text').value.trim();
+  if(!msg){showNotif('⚠ Write a message first!');return}
+  const selected=[...document.querySelectorAll('.target-chip.selected')].map(c=>c.textContent.trim());
+  if(!selected.length){showNotif('⚠ Select at least one page!');return}
+  showNotif('📤 Publishing...');
+  let ok=0;
+  for(const chip of selected){
+    let tk=null,isIG=false;
+    if(chip.includes('Lash')&&chip.includes('FB')) tk='lash-fb';
+    else if(chip.includes('Lash')&&chip.includes('IG')){tk='lash-fb';isIG=true}
+    else if(chip.includes('Vaskly')&&chip.includes('FB')) tk='vaskly-fb';
+    else if(chip.includes('Vaskly')&&chip.includes('IG')){tk='vaskly-fb';isIG=true}
+    else if(chip.includes('LuxCement')&&chip.includes('FB')) tk='lux-fb';
+    else if(chip.includes('LuxCement')&&chip.includes('IG')){tk='lux-fb';isIG=true}
+    if(!tk||!t[tk]) continue;
+    const pageId=PAGE_IDS[tk];
+    const token=t[tk];
+    try{
+      if(isIG){
+        const igKey=tk.replace('-fb','-ig');
+        const igId=PAGE_IDS[igKey];
+        const igToken=t[tk.replace('-fb','-ig-direct')]||token;
+        const igUrl=document.getElementById('ig-image-url').value.trim();
+        if(!igUrl){showNotif('⚠ Paste an image URL for Instagram!');continue}
+        const r1=await fetch(`https://graph.facebook.com/v25.0/${igId}/media`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_url:igUrl,caption:msg,access_token:igToken})});
+        const d1=await r1.json();
+        if(d1.id){
+          const r2=await fetch(`https://graph.facebook.com/v25.0/${igId}/media_publish`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({creation_id:d1.id,access_token:igToken})});
+          const d2=await r2.json();
+          if(d2.id) ok++;
+          else showNotif('❌ IG: '+(d2.error?.message||'Error'));
+        } else showNotif('❌ IG: '+(d1.error?.message||'Error'));
+      } else if(selectedImageFile){
+        const fd=new FormData();
+        fd.append('source',selectedImageFile);fd.append('message',msg);fd.append('access_token',token);
+        const r=await fetch(`https://graph.facebook.com/v25.0/${pageId}/photos`,{method:'POST',body:fd});
+        const d=await r.json();
+        if(d.id||d.post_id) ok++;
+        else showNotif('❌ FB: '+(d.error?.message||'Error'));
+      } else {
+        const r=await fetch(`https://graph.facebook.com/v25.0/${pageId}/feed`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,access_token:token})});
+        const d=await r.json();
+        if(d.id) ok++;
+        else showNotif('❌ FB: '+(d.error?.message||'Error'));
       }
-
-      // Recent posts
-      const postsData = await graphGetEdge(id, token, 'posts', 'message,created_time,likes.summary(true),comments.summary(true)');
-      if (postsData.data) {
-        postsData.data.forEach(post => {
-          allPosts.push({
-            ...post,
-            pageLabel: page.label,
-            color: page.color,
-            initials: page.initials,
-          });
-        });
-        totalPosts += postsData.data.length;
-      }
-
-      // Insights - reach
-      const insights = await graphGetEdge(id, token, 'insights', 'name,values&metric=page_impressions_unique&period=month');
-      if (insights.data && insights.data[0]) {
-        const vals = insights.data[0].values;
-        if (vals && vals.length) {
-          totalReach += vals[vals.length - 1].value || 0;
-        }
-      }
-    }
-
-    // Update overview stats
-    if (totalFollowers > 0) {
-      document.querySelector('.stats-grid .stat-card:nth-child(4) .stat-value').textContent =
-        totalFollowers > 1000 ? (totalFollowers/1000).toFixed(1) + 'K' : totalFollowers;
-    }
-    if (totalReach > 0) {
-      document.querySelector('.stats-grid .stat-card:nth-child(1) .stat-value').textContent =
-        totalReach > 1000 ? (totalReach/1000).toFixed(1) + 'K' : totalReach;
-    }
-
-    // Update recent posts list
-    if (allPosts.length > 0) {
-      renderRealPosts(allPosts);
-    }
-
-    showNotif('✅ Real data loaded successfully!');
+    }catch(e){console.error(e)}
   }
+  if(ok>0){showNotif(`✅ Posted to ${ok} page(s)!`);document.getElementById('post-text').value='';removeImage();}
+  else showNotif('⚠ Could not post — check tokens in Settings.');
+}
 
-  function updatePageFollowers(key, count, label) {
-    // Update analytics section
-    const cards = document.querySelectorAll('#section-stats .card');
-    const map = { 'lash-fb': 0, 'vaskly-fb': 1, 'lux-fb': 2 };
-    const idx = map[key];
-    if (idx !== undefined && cards[idx]) {
-      const vals = cards[idx].querySelectorAll('[style*="font-size:22px"]');
-      if (vals[0]) vals[0].textContent = count.toLocaleString();
-    }
-  }
-
-  function renderRealPosts(posts) {
-    const container = document.querySelector('.card .post-item')?.parentElement;
-    if (!container) return;
-
-    // Clear title row only, keep card-title
-    const title = container.querySelector('.card-title');
-    container.innerHTML = '';
-    if (title) container.appendChild(title);
-
-    posts.slice(0, 5).forEach(post => {
-      const likes = post.likes?.summary?.total_count || 0;
-      const comments = post.comments?.summary?.total_count || 0;
-      const date = post.created_time ? new Date(post.created_time).toLocaleDateString('en-GB', {day:'numeric',month:'short'}) : '';
-      const msg = post.message ? post.message.substring(0, 80) + (post.message.length > 80 ? '...' : '') : '(No text)';
-
-      const el = document.createElement('div');
-      el.className = 'post-item';
-      el.innerHTML = `
-        <div class="post-avatar" style="background:${post.color}">${post.initials}</div>
-        <div class="post-content">
-          <div class="post-meta">${post.pageLabel} · Facebook · ${date}</div>
-          <div class="post-text">${msg}</div>
-          <div class="post-stats">
-            <div class="post-stat">❤ ${likes}</div>
-            <div class="post-stat">💬 ${comments}</div>
-          </div>
-        </div>
-        <div class="post-badge badge-fb">FB</div>
-      `;
-      container.appendChild(el);
-    });
-  }
-
-  // ── Navigation ─────────────────────────────────────────────────
-  function showSection(name) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('section-' + name).classList.add('active');
-    if (event && event.currentTarget) event.currentTarget.classList.add('active');
-  }
-
-  function setTab(tab, el) {
-    document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-  }
-
-  function toggleChip(el) {
-    el.classList.toggle('selected');
-  }
-
-  // ── Post to Facebook ───────────────────────────────────────────
-  async function simulatePost() {
-    const tokens = getTokens();
-    const el2 = document.getElementById('post-text'); const msg = el2 ? el2.value.trim() : '';
-    if (!msg) { showNotif('⚠ Please write a message first!'); return; }
-
-    const selected = [...document.querySelectorAll('.target-chip.selected')].map(c => c.textContent.trim());
-    if (!selected.length) { showNotif('⚠ Please select at least one page!'); return; }
-
-    showNotif('📤 Publishing...');
-
-    let successCount = 0;
-    for (const chip of selected) {
-      let tokenKey = null;
-      let isIG = false;
-      if (chip.includes('Lash Rehab') && chip.includes('FB')) tokenKey = 'lash-fb';
-      else if (chip.includes('Lash Rehab') && chip.includes('IG')) { tokenKey = 'lash-fb'; isIG = true; }
-      else if (chip.includes('Vaskly') && chip.includes('FB')) tokenKey = 'vaskly-fb';
-      else if (chip.includes('Vaskly') && chip.includes('IG')) { tokenKey = 'vaskly-fb'; isIG = true; }
-      else if (chip.includes('LuxCement') && chip.includes('FB')) tokenKey = 'lux-fb';
-      else if (chip.includes('LuxCement') && chip.includes('IG')) { tokenKey = 'lux-fb'; isIG = true; }
-
-      if (!tokenKey || !tokens[tokenKey]) continue;
-      const fbPageId = PAGE_IDS[tokenKey];
-      const igKey = tokenKey.replace('-fb', '-ig');
-      const igId = PAGE_IDS[igKey];
-      const token = tokens[tokenKey];
-
-      try {
-        let postData = null;
-
-        if (isIG && igId) {
-          // Instagram posting - requires image
-          // Get the direct Instagram token
-          const igTokenKey = tokenKey.replace('-fb', '-ig-direct');
-          const igToken = tokens[igTokenKey] || token;
-          const igUrl = document.getElementById('ig-image-url') ? document.getElementById('ig-image-url').value.trim() : '';
-          if (!igUrl) {
-            showNotif('⚠ Please paste an image URL for Instagram!');
-            continue;
+async function generateAICaption(){
+  const section=document.getElementById('ai-section');
+  const status=document.getElementById('ai-status');
+  const suggestions=document.getElementById('ai-suggestions');
+  if(section) section.style.display='block';
+  if(status) status.textContent='Generating...';
+  if(suggestions) suggestions.innerHTML='<div style="font-size:13px;color:var(--muted);padding:12px 0">✨ AI is thinking...</div>';
+  const existing=document.getElementById('post-text').value.trim();
+  const selected=[...document.querySelectorAll('.target-chip.selected')].map(c=>c.textContent.trim()).join(', ');
+  const prompt=`Generate 3 engaging social media post captions for these pages: ${selected||'social media'}. ${existing?'Based on this draft: '+existing:''} Keep each under 150 words. Make them engaging, include relevant emojis and hashtags. Format as 3 numbered options.`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();
+    const text=d.content?.[0]?.text||'Could not generate captions';
+    const lines=text.split('\n').filter(l=>l.trim());
+    if(suggestions){
+      suggestions.innerHTML='';
+      let current='';
+      lines.forEach(line=>{
+        if(line.match(/^[123]\./)){
+          if(current){
+            const div=document.createElement('div');
+            div.className='ai-suggestion';
+            div.innerHTML=`<p>${current}</p><div class="ai-meta">Click to use this caption</div>`;
+            div.onclick=()=>{document.getElementById('post-text').value=current.replace(/^[123]\.\s*/,'');showNotif('✅ Caption applied!')};
+            suggestions.appendChild(div);
           }
-          showNotif('📤 Posting to Instagram...');
-          // Step 1: Create media container with public URL using IG token
-          const igr = await fetch('https://graph.facebook.com/v25.0/' + igId + '/media', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image_url: igUrl, caption: msg, access_token: igToken })
-          });
-          const igrData = await igr.json();
-          console.log('IG media create:', igrData);
-          if (igrData.id) {
-            // Step 2: Publish the container
-            const pub = await fetch('https://graph.facebook.com/v25.0/' + igId + '/media_publish', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ creation_id: igrData.id, access_token: igToken })
+          current=line;
+        } else current+=' '+line;
+      });
+      if(current){
+        const div=document.createElement('div');
+        div.className='ai-suggestion';
+        div.innerHTML=`<p>${current}</p><div class="ai-meta">Click to use this caption</div>`;
+        div.onclick=()=>{document.getElementById('post-text').value=current.replace(/^[123]\.\s*/,'');showNotif('✅ Caption applied!')};
+        suggestions.appendChild(div);
+      }
+    }
+    if(status) status.textContent='3 suggestions ready';
+  }catch(e){
+    if(suggestions) suggestions.innerHTML='<div style="font-size:13px;color:var(--accent2)">Could not generate — API error</div>';
+    if(status) status.textContent='Error';
+  }
+}
+
+function openScheduleModal(){
+  const msg=document.getElementById('post-text').value.trim();
+  if(!msg){showNotif('⚠ Write your post first!');return}
+  const now=new Date(Date.now()+60*60*1000);
+  document.getElementById('schedule-datetime').value=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById('scheduleModal').classList.add('open');
+}
+
+function confirmSchedule(){
+  const dt=document.getElementById('schedule-datetime').value;
+  if(!dt){showNotif('⚠ Pick a date!');return}
+  const msg=document.getElementById('post-text').value.trim();
+  const selected=[...document.querySelectorAll('.target-chip.selected')].map(c=>c.textContent.trim());
+  if(!selected.length){showNotif('⚠ Select pages first!');return}
+  let color='var(--accent)';
+  if(selected[0].includes('Lash')) color='var(--lash)';
+  else if(selected[0].includes('Vaskly')) color='var(--vaskly)';
+  else if(selected[0].includes('LuxCement')) color='var(--lux)';
+  const scheduled=JSON.parse(localStorage.getItem('shepard_scheduled')||'[]');
+  scheduled.push({id:Date.now(),datetime:dt,message:msg,pages:selected,note:document.getElementById('schedule-note').value.trim(),color});
+  scheduled.sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
+  localStorage.setItem('shepard_scheduled',JSON.stringify(scheduled));
+  document.getElementById('scheduleModal').classList.remove('open');
+  document.getElementById('post-text').value='';
+  renderScheduledPosts();
+  renderCalendar();
+  showNotif('✅ Scheduled for '+new Date(dt).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}));
+}
+
+function renderScheduledPosts(){
+  const scheduled=JSON.parse(localStorage.getItem('shepard_scheduled')||'[]');
+  const now=Date.now();
+  const upcoming=scheduled.filter(s=>new Date(s.datetime).getTime()>now);
+  localStorage.setItem('shepard_scheduled',JSON.stringify(upcoming));
+  document.getElementById('stat-scheduled').textContent=upcoming.length;
+  const overviewCount=document.getElementById('overview-schedule-count');
+  if(overviewCount) overviewCount.textContent=upcoming.length+' scheduled';
+  const composeCount=document.getElementById('compose-schedule-count');
+  if(composeCount) composeCount.textContent=upcoming.length+' scheduled';
+  const noHTML='<div style="font-size:13px;color:var(--muted);text-align:center;padding:12px 0">No scheduled posts yet</div>';
+  ['overview-schedule-list','compose-schedule-list'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    if(!upcoming.length){el.innerHTML=noHTML;return}
+    el.innerHTML='';
+    upcoming.slice(0,5).forEach(item=>{
+      const dt=new Date(item.datetime);
+      const div=document.createElement('div');
+      div.className='scheduled-item';
+      div.innerHTML=`<div class="sl-dot" style="background:${item.color}"></div><div class="sl-info"><div class="sl-time">⏰ ${dt.toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div><div class="sl-text">${item.message.substring(0,60)}${item.message.length>60?'...':''}</div><div class="sl-pages">${item.pages.join(', ')}</div></div><button class="sl-delete" onclick="deleteScheduled(${item.id})">✕</button>`;
+      el.appendChild(div);
+    });
+  });
+}
+
+function deleteScheduled(id){
+  let s=JSON.parse(localStorage.getItem('shepard_scheduled')||'[]');
+  s=s.filter(x=>x.id!==id);
+  localStorage.setItem('shepard_scheduled',JSON.stringify(s));
+  renderScheduledPosts();
+  renderCalendar();
+  showNotif('🗑 Removed.');
+}
+
+let currentMonth=new Date().getMonth(),currentYear=new Date().getFullYear();
+
+function renderCalendar(){
+  const headers=document.getElementById('cal-headers');
+  const days=document.getElementById('cal-days');
+  if(!headers||!days) return;
+  const label=document.getElementById('cal-month-label');
+  if(label) label.textContent=new Date(currentYear,currentMonth).toLocaleString('en-GB',{month:'long',year:'numeric'});
+  headers.innerHTML=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<div class="cal-header">${d}</div>`).join('');
+  const scheduled=JSON.parse(localStorage.getItem('shepard_scheduled')||'[]');
+  const first=new Date(currentYear,currentMonth,1);
+  const last=new Date(currentYear,currentMonth+1,0);
+  let startDay=first.getDay()-1;
+  if(startDay<0) startDay=6;
+  days.innerHTML='';
+  const today=new Date();
+  for(let i=0;i<startDay;i++){
+    const prev=new Date(currentYear,currentMonth,-(startDay-1-i));
+    const div=document.createElement('div');
+    div.className='cal-day other-month';
+    div.innerHTML=`<div class="cal-date">${prev.getDate()}</div>`;
+    days.appendChild(div);
+  }
+  for(let d=1;d<=last.getDate();d++){
+    const date=new Date(currentYear,currentMonth,d);
+    const dateStr=date.toISOString().split('T')[0];
+    const dayScheduled=scheduled.filter(s=>s.datetime.startsWith(dateStr));
+    const isToday=today.getDate()===d&&today.getMonth()===currentMonth&&today.getFullYear()===currentYear;
+    const div=document.createElement('div');
+    div.className='cal-day'+(isToday?' today':'');
+    div.innerHTML=`<div class="cal-date">${d}</div>${dayScheduled.map(s=>`<div class="cal-event" style="background:${s.color};color:white;opacity:0.9">${s.pages[0]?.split(' ')[0]||'Post'}</div>`).join('')}`;
+    days.appendChild(div);
+  }
+}
+
+function changeMonth(dir){
+  currentMonth+=dir;
+  if(currentMonth>11){currentMonth=0;currentYear++}
+  if(currentMonth<0){currentMonth=11;currentYear--}
+  renderCalendar();
+}
+
+async function loadComments(){
+  const t=getTokens();
+  const list=document.getElementById('comments-list');
+  if(!list) return;
+  if(!Object.keys(t).length){list.innerHTML='<div style="font-size:13px;color:var(--muted);padding:20px 0;text-align:center">Save tokens to load comments</div>';return}
+  list.innerHTML='<div style="font-size:13px;color:var(--muted);padding:12px 0">Loading comments...</div>';
+  const allComments=[];
+  const pages=[{key:'lash-fb',label:'Lash Rehab',color:'var(--lash)'},{key:'vaskly-fb',label:'Vaskly.no',color:'var(--vaskly)'},{key:'lux-fb',label:'LuxCement',color:'var(--lux)'}];
+  for(const p of pages){
+    if(!t[p.key]) continue;
+    const id=PAGE_IDS[p.key];
+    try{
+      const posts=await fetch(`https://graph.facebook.com/v25.0/${id}/posts?fields=message,comments{from,message,created_time,id}&limit=3&access_token=${t[p.key]}`).then(r=>r.json());
+      if(posts.data){
+        posts.data.forEach(post=>{
+          if(post.comments?.data){
+            post.comments.data.forEach(c=>{
+              allComments.push({...c,pageLabel:p.label,color:p.color,postId:post.id,token:t[p.key]});
             });
-            postData = await pub.json();
-            console.log('IG publish:', postData);
-          } else {
-            postData = igrData;
           }
-        } else if (selectedImageFile) {
-          showNotif('📤 Uploading image...');
-          const formData = new FormData();
-          formData.append('source', selectedImageFile);
-          formData.append('message', msg);
-          formData.append('access_token', token);
-          const r = await fetch('https://graph.facebook.com/v25.0/' + fbPageId + '/photos', {
-            method: 'POST',
-            body: formData
-          });
-          postData = await r.json();
-        } else {
-          const r = await fetch('https://graph.facebook.com/v25.0/' + fbPageId + '/feed', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: msg, access_token: token })
-          });
-          postData = await r.json();
-        }
-
-        if (postData && (postData.id || postData.post_id)) {
-          successCount++;
-        } else if (postData && postData.error) {
-          showNotif('❌ IG: ' + postData.error.message);
-          console.error('Post error:', postData.error);
-        }
-      } catch(e) {
-        console.error('Post exception:', e);
-      }
-    }
-
-    if (successCount > 0) {
-      showNotif('✅ Posted to ' + successCount + ' page(s) successfully!');
-      document.getElementById('post-text').value = ''; removeImage();
-    } else {
-      showNotif('⚠ Could not post — check your tokens in Settings.');
-    }
-  }
-
-  function showNotif(msg) {
-    const n = document.getElementById('notif');
-    n.textContent = msg;
-    n.classList.add('show');
-    setTimeout(() => n.classList.remove('show'), 3500);
-  }
-
-  function openTokenModal() {
-    document.getElementById('tokenModal').classList.add('open');
-  }
-
-  function closeTokenModal() {
-    document.getElementById('tokenModal').classList.remove('open');
-  }
-
-  document.getElementById('tokenModal').addEventListener('click', function(e) {
-    if (e.target === this) closeTokenModal();
-  });
-
-  // ── On load ────────────────────────────────────────────────────
-
-  // Image handling
-  let selectedImageFile = null;
-  let selectedImageBase64 = null;
-
-  function handleImageSelect(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (file.size > 10 * 1024 * 1024) { showNotif('Image too large! Max 10MB.'); return; }
-    selectedImageFile = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      selectedImageBase64 = e.target.result;
-      document.getElementById('image-preview').src = selectedImageBase64;
-      document.getElementById('image-preview-area').style.display = 'block';
-      document.getElementById('image-name').textContent = '📎 ' + file.name + ' (' + (file.size/1024).toFixed(0) + 'KB)';
-      showNotif('✅ Image selected: ' + file.name);
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function removeImage() {
-    selectedImageFile = null;
-    selectedImageBase64 = null;
-    document.getElementById('image-upload').value = '';
-    document.getElementById('image-preview-area').style.display = 'none';
-    document.getElementById('image-preview').src = '';
-    showNotif('Image removed.');
-  }
-
-  function saveDraft() {
-    const el = document.getElementById('post-text');
-    const msg = el ? el.value.trim() : '';
-    if (!msg) { showNotif('Write something first!'); return; }
-    showNotif('✅ Draft saved!');
-  }
-
-
-  // ── Schedule functions ─────────────────────────────────────────
-  function openScheduleModal() {
-    const msg = document.getElementById('post-text') ? document.getElementById('post-text').value.trim() : '';
-    if (!msg) { showNotif('⚠ Write your post first, then schedule it!'); return; }
-    // Set default to 1 hour from now
-    const now = new Date(Date.now() + 60 * 60 * 1000);
-    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-    document.getElementById('schedule-datetime').value = local;
-    document.getElementById('schedule-note').value = '';
-    document.getElementById('scheduleModal').classList.add('open');
-  }
-
-  function closeScheduleModal() {
-    document.getElementById('scheduleModal').classList.remove('open');
-  }
-
-  function confirmSchedule() {
-    const dt = document.getElementById('schedule-datetime').value;
-    if (!dt) { showNotif('⚠ Please pick a date and time!'); return; }
-    const note = document.getElementById('schedule-note').value.trim();
-    const msg = document.getElementById('post-text') ? document.getElementById('post-text').value.trim() : '';
-    const selected = [...document.querySelectorAll('.target-chip.selected')].map(c => c.textContent.trim());
-    if (!selected.length) { showNotif('⚠ Select at least one page first!'); return; }
-
-    // Determine color from first selected page
-    let color = 'var(--accent)';
-    if (selected[0].includes('Lash')) color = 'var(--lash)';
-    else if (selected[0].includes('Vaskly')) color = 'var(--vaskly)';
-    else if (selected[0].includes('LuxCement')) color = 'var(--lux)';
-
-    const scheduled = JSON.parse(localStorage.getItem('shepard_scheduled') || '[]');
-    scheduled.push({
-      id: Date.now(),
-      datetime: dt,
-      message: msg,
-      pages: selected,
-      note: note,
-      color: color,
-    });
-    scheduled.sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
-    localStorage.setItem('shepard_scheduled', JSON.stringify(scheduled));
-
-    closeScheduleModal();
-    document.getElementById('post-text').value = '';
-    removeImage();
-    renderScheduledPosts();
-    showNotif('✅ Post scheduled for ' + new Date(dt).toLocaleString('en-GB', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}));
-  }
-
-  function renderScheduledPosts() {
-    const scheduled = JSON.parse(localStorage.getItem('shepard_scheduled') || '[]');
-    const list = document.getElementById('schedule-list');
-    const count = document.getElementById('schedule-count');
-    if (!list) return;
-
-    // Remove past posts
-    const now = Date.now();
-    const upcoming = scheduled.filter(s => new Date(s.datetime).getTime() > now);
-    localStorage.setItem('shepard_scheduled', JSON.stringify(upcoming));
-
-    if (count) count.textContent = upcoming.length + ' scheduled';
-
-    // Also update compose page count
-    const composeCount = document.getElementById('compose-schedule-count');
-    if (composeCount) composeCount.textContent = upcoming.length + ' scheduled';
-
-    const noPostsHTML = '<div style="font-size:13px;color:var(--muted);padding:16px 0;text-align:center;">No scheduled posts yet.<br><br><strong style="color:var(--text);">How to schedule:</strong><br>1. Write your post above<br>2. Select your pages<br>3. Click the <strong style="color:var(--accent);">⏰ clock icon</strong> button<br>4. Pick a date & time and confirm</div>';
-
-    if (!upcoming.length) {
-      list.innerHTML = noPostsHTML;
-      const composeList = document.getElementById('compose-schedule-list');
-      if (composeList) composeList.innerHTML = noPostsHTML;
-      return;
-    }
-
-    list.innerHTML = '';
-    const composeList2 = document.getElementById('compose-schedule-list');
-    if (composeList2) composeList2.innerHTML = '';
-    upcoming.forEach(item => {
-      const dt = new Date(item.datetime);
-      const timeStr = dt.toLocaleString('en-GB', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-      const pagesStr = item.pages.join(', ');
-      const msgPreview = item.message.length > 60 ? item.message.substring(0, 60) + '...' : item.message;
-
-      const el = document.createElement('div');
-      el.className = 'scheduled-list-item';
-      el.innerHTML =
-        '<div class="sl-dot" style="background:' + item.color + '"></div>' +
-        '<div class="sl-info">' +
-          '<div class="sl-time">⏰ ' + timeStr + (item.note ? ' · ' + item.note : '') + '</div>' +
-          '<div class="sl-text">' + msgPreview + '</div>' +
-          '<div class="sl-pages">' + pagesStr + '</div>' +
-        '</div>' +
-        '<button class="sl-delete" onclick="deleteScheduled(' + item.id + ')" title="Delete">✕</button>';
-      list.appendChild(el);
-      // Also add to compose page
-      const composeList3 = document.getElementById('compose-schedule-list');
-      if (composeList3) composeList3.appendChild(el.cloneNode(true));
-    });
-  }
-
-  function deleteScheduled(id) {
-    let scheduled = JSON.parse(localStorage.getItem('shepard_scheduled') || '[]');
-    scheduled = scheduled.filter(s => s.id !== id);
-    localStorage.setItem('shepard_scheduled', JSON.stringify(scheduled));
-    renderScheduledPosts();
-    showNotif('🗑 Scheduled post removed.');
-  }
-
-  document.getElementById('scheduleModal').addEventListener('click', function(e) {
-    if (e.target === this) closeScheduleModal();
-  });
-
-
-  // ── Auto-publish scheduler ─────────────────────────────────────
-  // Runs every 30 seconds, checks if any scheduled post is due
-  function startScheduler() {
-    setInterval(async () => {
-      const scheduled = JSON.parse(localStorage.getItem('shepard_scheduled') || '[]');
-      if (!scheduled.length) return;
-
-      const now = Date.now();
-      const due = scheduled.filter(s => new Date(s.datetime).getTime() <= now);
-      const remaining = scheduled.filter(s => new Date(s.datetime).getTime() > now);
-
-      for (const post of due) {
-        await autoPublishPost(post);
-      }
-
-      if (due.length > 0) {
-        localStorage.setItem('shepard_scheduled', JSON.stringify(remaining));
-        renderScheduledPosts();
-      }
-    }, 30000); // check every 30 seconds
-  }
-
-  async function autoPublishPost(post) {
-    const tokens = getTokens();
-    let successCount = 0;
-
-    for (const chip of post.pages) {
-      let tokenKey = null;
-      if (chip.includes('Lash') && chip.includes('FB')) tokenKey = 'lash-fb';
-      else if (chip.includes('Lash') && chip.includes('IG')) tokenKey = 'lash-ig';
-      else if (chip.includes('Vaskly') && chip.includes('FB')) tokenKey = 'vaskly-fb';
-      else if (chip.includes('Vaskly') && chip.includes('IG')) tokenKey = 'vaskly-ig';
-      else if (chip.includes('LuxCement') && chip.includes('FB')) tokenKey = 'lux-fb';
-
-      if (!tokenKey || !tokens[tokenKey]) continue;
-      const pageId = PAGE_IDS[tokenKey];
-      const token = tokens[tokenKey];
-
-      try {
-        const fbUrl2 = 'https://graph.facebook.com/v25.0/' + pageId + '/feed';
-        const r = await fetch(fbUrl2, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: post.message, access_token: token })
-        });
-        const data = await r.json();
-        if (data.id) successCount++;
-      } catch(e) {}
-    }
-
-    if (successCount > 0) {
-      showNotif('🚀 Auto-posted: "' + post.message.substring(0, 40) + '..."');
-      // Browser notification if permission granted
-      if (Notification.permission === 'granted') {
-        new Notification('Shepard: Post Published!', {
-          body: post.message.substring(0, 80),
-          icon: ''
         });
       }
-    } else {
-      showNotif('⚠ Scheduled post failed — check tokens in Settings.');
-    }
+    }catch(e){}
   }
-
-  // Ask for browser notification permission
-  function requestNotificationPermission() {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-  }
-
-  window.addEventListener('load', () => {
-    loadSavedTokensIntoInputs();
-    fetchAllData();
-    renderScheduledPosts();
-    startScheduler();
-    requestNotificationPermission();
+  list.innerHTML='';
+  if(!allComments.length){list.innerHTML='<div style="font-size:13px;color:var(--muted);padding:20px 0;text-align:center">No recent comments found</div>';return}
+  allComments.slice(0,10).forEach(c=>{
+    const div=document.createElement('div');
+    div.className='comment-item';
+    div.innerHTML=`<div class="comment-header"><span class="comment-author">${c.from?.name||'Unknown'}</span><span class="comment-time">${new Date(c.created_time).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span></div><div class="comment-text">${c.message}</div><div class="comment-actions"><span style="font-size:11px;color:var(--muted)">${c.pageLabel}</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="selectComment('${c.id}','${c.from?.name||'User'}','${c.pageLabel}')">Reply</button></div>`;
+    list.appendChild(div);
   });
+}
+
+function selectComment(id,name,page){
+  const target=document.getElementById('reply-target');
+  if(target) target.textContent=`Replying to ${name} on ${page}`;
+  document.getElementById('reply-text').focus();
+  window._selectedCommentId=id;
+}
+
+async function sendReply(){
+  const msg=document.getElementById('reply-text').value.trim();
+  if(!msg){showNotif('⚠ Write a reply first!');return}
+  if(!window._selectedCommentId){showNotif('⚠ Select a comment to reply to!');return}
+  const t=getTokens();
+  const token=t['lash-fb']||t['vaskly-fb']||t['lux-fb'];
+  if(!token){showNotif('⚠ No token found!');return}
+  try{
+    const r=await fetch(`https://graph.facebook.com/v25.0/${window._selectedCommentId}/comments`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,access_token:token})});
+    const d=await r.json();
+    if(d.id){showNotif('✅ Reply sent!');document.getElementById('reply-text').value='';window._selectedCommentId=null;document.getElementById('reply-target').textContent='Select a comment to reply';}
+    else showNotif('❌ '+(d.error?.message||'Could not send reply'));
+  }catch(e){showNotif('❌ Error sending reply')}
+}
+
+async function fetchAnalytics(){
+  const t=getTokens();
+  if(!Object.keys(t).length) return;
+  const pages=[
+    {key:'lash-fb',fid:'lash',follEl:'lash-followers',postEl:'lash-posts',engEl:'lash-engage'},
+    {key:'vaskly-fb',fid:'vaskly',follEl:'vaskly-followers',postEl:'vaskly-posts',engEl:'vaskly-engage'},
+    {key:'lux-fb',fid:'lux',follEl:'lux-followers',postEl:'lux-posts',engEl:'lux-engage'}
+  ];
+  const topEl=document.getElementById('top-posts-list');
+  if(topEl) topEl.innerHTML='<div style="font-size:13px;color:var(--muted);padding:12px 0">Loading...</div>';
+  const allPosts=[];
+  for(const p of pages){
+    if(!t[p.key]) continue;
+    const id=PAGE_IDS[p.key];
+    try{
+      const info=await fetch(`https://graph.facebook.com/v25.0/${id}?fields=fan_count,followers_count&access_token=${t[p.key]}`).then(r=>r.json());
+      if(!info.error){
+        const fans=info.fan_count||info.followers_count||0;
+        const el=document.getElementById(p.follEl);
+        if(el) el.textContent=fans>1000?(fans/1000).toFixed(1)+'K':fans;
+      }
+      const posts=await fetch(`https://graph.facebook.com/v25.0/${id}/posts?fields=message,likes.summary(true),comments.summary(true),created_time&limit=10&access_token=${t[p.key]}`).then(r=>r.json());
+      if(posts.data){
+        const el=document.getElementById(p.postEl);
+        if(el) el.textContent=posts.data.length;
+        let totalLikes=0;
+        posts.data.forEach(post=>{
+          const likes=post.likes?.summary?.total_count||0;
+          const comments=post.comments?.summary?.total_count||0;
+          totalLikes+=likes+comments;
+          allPosts.push({...post,likes,comments,pageLabel:p.key.replace('-fb','').toUpperCase()});
+        });
+        const engEl=document.getElementById(p.engEl);
+        if(engEl&&posts.data.length) engEl.textContent=(totalLikes/posts.data.length).toFixed(1)+'avg';
+      }
+    }catch(e){}
+  }
+  if(topEl&&allPosts.length){
+    topEl.innerHTML='';
+    allPosts.sort((a,b)=>(b.likes+b.comments)-(a.likes+a.comments)).slice(0,5).forEach(p=>{
+      const div=document.createElement('div');
+      div.className='post-item';
+      const msg=p.message?p.message.substring(0,80)+'...':'(No text)';
+      const date=p.created_time?new Date(p.created_time).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'';
+      div.innerHTML=`<div class="post-content"><div class="post-meta">${p.pageLabel} · ${date}</div><div class="post-text">${msg}</div><div class="post-stats"><div class="post-stat">❤ ${p.likes}</div><div class="post-stat">💬 ${p.comments}</div></div></div>`;
+      topEl.appendChild(div);
+    });
+  }
+}
+
+function showNotif(msg){
+  const n=document.getElementById('notif');
+  n.textContent=msg;n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'),3500);
+}
+
+function startScheduler(){
+  setInterval(async()=>{
+    const scheduled=JSON.parse(localStorage.getItem('shepard_scheduled')||'[]');
+    if(!scheduled.length) return;
+    const now=Date.now();
+    const due=scheduled.filter(s=>new Date(s.datetime).getTime()<=now);
+    const remaining=scheduled.filter(s=>new Date(s.datetime).getTime()>now);
+    for(const post of due){
+      const t=getTokens();
+      for(const chip of post.pages){
+        let tk=null;
+        if(chip.includes('Lash')&&chip.includes('FB')) tk='lash-fb';
+        else if(chip.includes('Vaskly')&&chip.includes('FB')) tk='vaskly-fb';
+        else if(chip.includes('LuxCement')&&chip.includes('FB')) tk='lux-fb';
+        if(!tk||!t[tk]) continue;
+        const pageId=PAGE_IDS[tk];
+        try{
+          const r=await fetch(`https://graph.facebook.com/v25.0/${pageId}/feed`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:post.message,access_token:t[tk]})});
+          const d=await r.json();
+          if(d.id) showNotif('🚀 Auto-posted: "'+post.message.substring(0,40)+'..."');
+        }catch(e){}
+      }
+    }
+    if(due.length>0){localStorage.setItem('shepard_scheduled',JSON.stringify(remaining));renderScheduledPosts();renderCalendar();}
+  },30000);
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m) m.classList.remove('open')});
+});
+
+window.addEventListener('load',()=>{
+  loadSavedTokens();
+  fetchAllData();
+  renderScheduledPosts();
+  renderCalendar();
+  startScheduler();
+});
 </script>
 </body>
 </html>
